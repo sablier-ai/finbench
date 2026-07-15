@@ -1,52 +1,94 @@
-# FinBench — Multi-Task Leaderboard (finval 0.6.1)
+# FinBench Leaderboard
 
-Every competitor scored under identical conditions per task (see [BENCHMARK_TASKS.md](./BENCHMARK_TASKS.md)) against the pinned canonical panel real (`reference/panels/us_equities_macro/real_paths.npy`, sha256-verified at run time). The aggregate is **mean rank** across scored tasks (absolute scores don't cross tasks) and includes ONLY competitors scored on all of them. FLOW flavors appear under opaque codenames only.
+Benchmark for multivariate financial time-series generation. Each model generates synthetic paths for a single frozen panel and is scored, under identical conditions, on seven tasks spanning distributional fidelity and economic utility. Models are ranked by **mean rank across tasks** — no single metric defines the benchmark.
 
-Every task shown here measurably resolves the field — its competitors clear the task's honest real-vs-real noise floor (real data scored against a calendar-disjoint independent draw of itself). Tasks that do not yet resolve on this panel are not included.
+**Panel** `us_equities_macro` · 7 features · N=200 paths · H=60 days · out-of-sample &nbsp;|&nbsp; **Models** 27 &nbsp;|&nbsp; **Tasks** 7 &nbsp;|&nbsp; **Metric** mean rank (lower is better)
 
-## Leaderboard — mean rank across the scored tasks
+Every task clears an honest real-vs-real noise floor (real data scored against a calendar-disjoint draw of itself) — tasks that cannot separate the field on this panel are not shown. FLOW variants appear under opaque codenames.
 
-| Rank | Competitor | Family | Provenance | Mean rank | P(#1)† | Tasks scored |
-|--:|--|--|--|--:|--:|--:|
-| 1 | FLOW-H | flow | recipe-controlled | 4.29 | 0.66 | 7/7 |
-| 2 | ImagenTime | neural | published-defaults | 4.79 | 0.29 | 7/7 |
-| 3 | FLOW-P2 | flow | production-reference | 6.86 | 0.03 | 7/7 |
-| 4= | Block-Bootstrap | classical | replay-resampling | 7.57 | 0.00 | 7/7 |
-| 4= | FLOW-G | flow | recipe-controlled | 7.57 | 0.01 | 7/7 |
-| 6 | FLOW-I | flow | recipe-controlled | 8.00 | 0.00 | 7/7 |
-| 7 | FLOW-A | flow | recipe-controlled | 8.57 | 0.00 | 7/7 |
-| 8 | FLOW-E | flow | recipe-controlled | 8.71 | 0.00 | 7/7 |
-| 9 | FLOW-C | flow | recipe-controlled | 9.00 | 0.00 | 7/7 |
-| 10 | FLOW-J | flow | recipe-controlled | 10.93 | 0.00 | 7/7 |
-| 11 | FLOW-B | flow | recipe-controlled | 12.29 | 0.00 | 7/7 |
-| 12 | FLOW-D | flow | recipe-controlled | 12.71 | 0.00 | 7/7 |
-| 13 | FM-TS | neural | published-defaults | 13.57 | 0.00 | 7/7 |
-| 14 | FLOW-F | flow | recipe-controlled | 14.00 | 0.00 | 7/7 |
-| 15 | t-Copula | classical | published-defaults | 14.57 | 0.00 | 7/7 |
-| 16 | Historical-Sim | classical | replay-resampling | 15.00 | 0.00 | 7/7 |
-| 17 | QuantGAN | neural | published-defaults | 16.57 | 0.00 | 7/7 |
-| 18 | Gaussian-iid | classical | published-defaults | 17.57 | 0.00 | 7/7 |
-| 19 | Diffusion-TS | neural | published-defaults | 17.71 | 0.00 | 7/7 |
-| 20 | FHS | classical | replay-resampling | 18.00 | 0.00 | 7/7 |
-| 21 | KoVAE | neural | published-defaults | 18.21 | 0.00 | 7/7 |
-| 22 | FLOW-P1 | flow | production-reference | 18.43 | 0.00 | 7/7 |
-| 23 | DCC-t | classical | published-defaults | 20.36 | 0.00 | 7/7 |
-| 24= | GARCH-t | classical | published-defaults | 21.43 | 0.00 | 7/7 |
-| 24= | TimeGAN-600 | neural | published-defaults | 21.43 | 0.00 | 7/7 |
-| 26 | TimeGAN | neural | published-defaults | 23.36 | 0.00 | 7/7 |
-| 27 | TimeVAE | neural | published-defaults | 26.50 | 0.00 | 7/7 |
+## Overall
 
-†P(#1): approximate bootstrap probability of aggregate rank 1 over 1000 resamples (fixed seed → reproducible). Since only per-task (mean, std, n) summaries are available here (not per-seed values), each resample perturbs every task score with Gaussian(mean, std/√n) noise and re-ranks. **Read P(#1) as an UPPER BOUND on confidence, not a calibrated probability** (audit AGG-P1-3): it prices only per-seed sampling error and omits two larger terms — (a) cross-task error correlation, and (b) the DOMINANT unmodelled term, target/regime sampling error (the single OOS window and single reference draw; the audit measured T2 targets moving 131–330 bps and F5's disjoint order scrambling the top-14), which is not in the bootstrap at all. The ordinal winner is robust; the magnitude is optimistic. n=1 rows carry an IMPUTED per-task sem (median multi-seed std), never zero, so a single-seed row cannot be locked to an over-precise rank (audit F1-N1-5/NBOOT-1). Equal mean ranks share a tie-aware rank ('1=' means tied at 1).
+| # | Model | Family | Mean rank | P(#1)† | Coverage |
+|--:|--|--|--:|--:|--:|
+| 1 | FLOW-H | flow | 4.29 | 0.66 | 7/7 |
+| 2 | ImagenTime | neural | 4.79 | 0.29 | 7/7 |
+| 3 | FLOW-P2 | flow | 6.86 | 0.03 | 7/7 |
+| 4= | Block-Bootstrap | classical | 7.57 | 0.00 | 7/7 |
+| 4= | FLOW-G | flow | 7.57 | 0.01 | 7/7 |
+| 6 | FLOW-I | flow | 8.00 | 0.00 | 7/7 |
+| 7 | FLOW-A | flow | 8.57 | 0.00 | 7/7 |
+| 8 | FLOW-E | flow | 8.71 | 0.00 | 7/7 |
+| 9 | FLOW-C | flow | 9.00 | 0.00 | 7/7 |
+| 10 | FLOW-J | flow | 10.93 | 0.00 | 7/7 |
+| 11 | FLOW-B | flow | 12.29 | 0.00 | 7/7 |
+| 12 | FLOW-D | flow | 12.71 | 0.00 | 7/7 |
+| 13 | FM-TS | neural | 13.57 | 0.00 | 7/7 |
+| 14 | FLOW-F | flow | 14.00 | 0.00 | 7/7 |
+| 15 | t-Copula | classical | 14.57 | 0.00 | 7/7 |
+| 16 | Historical-Sim | classical | 15.00 | 0.00 | 7/7 |
+| 17 | QuantGAN | neural | 16.57 | 0.00 | 7/7 |
+| 18 | Gaussian-iid | classical | 17.57 | 0.00 | 7/7 |
+| 19 | Diffusion-TS | neural | 17.71 | 0.00 | 7/7 |
+| 20 | FHS | classical | 18.00 | 0.00 | 7/7 |
+| 21 | KoVAE | neural | 18.21 | 0.00 | 7/7 |
+| 22 | FLOW-P1 | flow | 18.43 | 0.00 | 7/7 |
+| 23 | DCC-t | classical | 20.36 | 0.00 | 7/7 |
+| 24= | GARCH-t | classical | 21.43 | 0.00 | 7/7 |
+| 24= | TimeGAN-600 | neural | 21.43 | 0.00 | 7/7 |
+| 26 | TimeGAN | neural | 23.36 | 0.00 | 7/7 |
+| 27 | TimeVAE | neural | 26.50 | 0.00 | 7/7 |
 
-Provenance: **production-reference** = own tuned production configuration; **published-defaults** = external baseline at untuned published defaults; **recipe-controlled** = one shared FLOW bake-off recipe, selected via finval (the F1 evaluator) on this panel; **replay-resampling** = resamples/replays real training data (industry practice: historical simulation family) — cannot generate genuinely novel scenarios; memorization-guard flags expected.
+†P(#1): bootstrap probability of finishing first, over 1000 resamples (fixed seed). An upper bound on confidence — it prices per-seed sampling error only, not target/regime error (single OOS window), so the winner's ordering is robust but the probability is optimistic.
 
-*Scored tasks: F1, F2, F4, F5, T2, T3, T5. Tasks with no scorer yet (of 7 total) are omitted from the aggregate until wired.*
+## Per-task ranks
+
+Rank of each model on every task (**1** = best in column). Detailed score tables with confidence intervals and noise floors follow below.
+
+| Model | F1 | F2 | F4 | F5 | T2 | T3 | T5 | Mean |
+|--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|--:|
+| FLOW-H | **1** | 11 | **1** | 10 | 2 | 3 | 2 | 4.29 |
+| ImagenTime | 6 | 2 | 3 | 2 | 11 | **1** | 8.5 | 4.79 |
+| FLOW-P2 | 2 | 13 | 5 | 18 | **1** | 8 | **1** | 6.86 |
+| Block-Bootstrap | 11 | 5 | 6 | 3 | 15 | 2 | 11 | 7.57 |
+| FLOW-G | 4 | 10 | 4 | 15 | 3 | 14 | 3 | 7.57 |
+| FLOW-I | 5 | 14 | 2 | 12 | 9 | 9 | 5 | 8.00 |
+| FLOW-A | 3 | 8 | 10 | 11 | 4 | 20 | 4 | 8.57 |
+| FLOW-E | 8 | 6 | 12 | 6 | 7 | 15 | 7 | 8.71 |
+| FLOW-C | 9 | **1** | 11 | 9 | 5 | 18 | 10 | 9.00 |
+| FLOW-J | 10 | 7 | 13 | 13 | 6 | 19 | 8.5 | 10.93 |
+| FLOW-B | 15 | 4 | 7 | 14 | 19 | 11 | 16 | 12.29 |
+| FLOW-D | 7 | 17 | 15 | 17 | 10 | 17 | 6 | 12.71 |
+| FM-TS | 22 | 3 | 19 | 4 | 22 | 5 | 20 | 13.57 |
+| FLOW-F | 14 | 12 | 17 | 5 | 13 | 22 | 15 | 14.00 |
+| t-Copula | 12 | 21 | 9 | 21 | 14 | 12 | 13 | 14.57 |
+| Historical-Sim | 13 | 20 | 8 | 23 | 8 | 21 | 12 | 15.00 |
+| QuantGAN | 20 | 24 | 22 | **1** | 21 | 10 | 18 | 16.57 |
+| Gaussian-iid | 16 | 22 | 16 | 24 | 12 | 16 | 17 | 17.57 |
+| Diffusion-TS | 23 | 15 | 23 | 8 | 23 | 13 | 19 | 17.71 |
+| FHS | 18 | 9 | 14 | 22 | 18 | 23 | 22 | 18.00 |
+| KoVAE | 24 | 16 | 24 | 7 | 24 | 7 | 25.5 | 18.21 |
+| FLOW-P1 | 17 | 18 | 20 | 16 | 20 | 24 | 14 | 18.43 |
+| DCC-t | 19 | 19 | 18 | 19 | 17 | 25 | 25.5 | 20.36 |
+| GARCH-t | 21 | 23 | 21 | 20 | 16 | 26 | 23 | 21.43 |
+| TimeGAN-600 | 25 | 25 | 25 | 25 | 25 | 4 | 21 | 21.43 |
+| TimeGAN | 26 | 27 | 26 | 26 | 27 | 6 | 25.5 | 23.36 |
+| TimeVAE | 27 | 26 | 27 | 27 | 26 | 27 | 25.5 | 26.50 |
+
+Tasks: **F1** Synthetic-data quality (finval 0.6.1, gate-penalized) · **F2** Stylized-facts battery (Cont 2001) · **F4** Distributional distance (W1/MMD/SigW1) · **F5** Martingale / no-drift check · **T2** Options pricing / IV smile · **T3** Predictive validity (TSTR, multi-family) · **T5** VaR/ES risk backtesting
+
+**Provenance.** *production-reference* — own tuned production configuration. *published-defaults* — external baseline at untuned published defaults. *recipe-controlled* — one shared FLOW bake-off recipe, selected via finval (the F1 evaluator) on this panel. *replay-resampling* — resamples/replays real training data (industry practice: historical simulation family) — cannot generate genuinely novel scenarios; memorization-guard flags expected.
+
+---
+
+# Task detail
+
+Per-task score tables with 95% confidence intervals and the real-vs-real noise floor. Each table's ranks are the columns of the matrix above.
 
 ## F1 — Synthetic-data quality (finval 0.6.1, gate-penalized)
 
-**Selection caveat.** The FLOW-A…J recipe was selected by sweeping THIS metric (finval) on THIS panel; their F1 is in-sample w.r.t. that selection — read it as a training-fit upper bound, not held-out skill. FLOW-P1/P2 (own production configuration) and the external baselines are not selected on F1, so their F1 is held-out.
+Scored with [finval](https://github.com/sablier-ai/finval) v0.6.1 (the finance-aware path-quality suite). **Selection caveat:** the FLOW-A…J recipe was selected by sweeping this metric on this panel, so their F1 is in-sample — a training-fit upper bound, not held-out skill. FLOW-P1/P2 (own production configuration) and the external baselines are not selected on F1, so their F1 is held-out.
 
-Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, **Holm-corrected across the field for multiplicity** before the p>0.05 threshold — audit AGG-HOLM-2; untestable at n<2).
+Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
 | Rank | Competitor | n | score | 95% CI | vs #1 |
 |--:|--|--:|--:|--:|--|
@@ -79,11 +121,11 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 27 | TimeVAE | 5 | 0.008 ± 0.000 | ±0.000 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 10 reps)_ | — | 0.598 ± 0.064 | — | — |
 
-The noise-floor row is what real data scores against an **independent** draw of itself under this scorer — two halves of the pinned real split by CALENDAR day (an H-day gap between them, so they share ZERO days), each bootstrapped to the competitor path budget, mean ± sd over reps. That is what a *perfect* generator (real reality, same budget) scores; a competitor at or inside that band is at the task's resolution limit, and differences there are sampling noise, not skill (audit F1-FLOOR-1/F2-OW-1). **Field vs floor:** the field sits worse than the honest floor — genuine resolution. (For reference, the OLD even/odd path-parity self-score was 0.985. It is **not** a floor: the pinned 'paths' are stride-~4 OVERLAPPING rolling windows, so its two halves share ~99.3% of their calendar days — it prices estimator jitter on near-identical data, at half the path budget, and materially over-states the resolution on every task.)
+**Field vs floor:** the field sits worse than the honest floor — genuine resolution
 
 ## F2 — Stylized-facts battery (Cont 2001)
 
-Metric: dist (lower better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, **Holm-corrected across the field for multiplicity** before the p>0.05 threshold — audit AGG-HOLM-2; untestable at n<2).
+Metric: dist (lower better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
 | Rank | Competitor | n | dist | 95% CI | vs #1 |
 |--:|--|--:|--:|--:|--|
@@ -116,11 +158,11 @@ Metric: dist (lower better). CI = 95% t-interval over seeds; '≈#1' = statistic
 | 27 | TimeGAN | 5 | 0.644 ± 0.020 | ±0.024 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.604 ± 0.038 | — | — |
 
-The noise-floor row is what real data scores against an **independent** draw of itself under this scorer — two halves of the pinned real split by CALENDAR day (an H-day gap between them, so they share ZERO days), each bootstrapped to the competitor path budget, mean ± sd over reps. That is what a *perfect* generator (real reality, same budget) scores; a competitor at or inside that band is at the task's resolution limit, and differences there are sampling noise, not skill (audit F1-FLOOR-1/F2-OW-1). **Field vs floor:** the field scores BETTER than independent real data on 24/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity. (For reference, the OLD even/odd path-parity self-score was 0.081. It is **not** a floor: the pinned 'paths' are stride-~4 OVERLAPPING rolling windows, so its two halves share ~99.3% of their calendar days — it prices estimator jitter on near-identical data, at half the path budget, and materially over-states the resolution on every task.)
+**Field vs floor:** the field scores BETTER than independent real data on 24/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity
 
 ## F4 — Distributional distance (W1/MMD/SigW1)
 
-Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, **Holm-corrected across the field for multiplicity** before the p>0.05 threshold — audit AGG-HOLM-2; untestable at n<2).
+Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
 | Rank | Competitor | n | score | 95% CI | vs #1 |
 |--:|--|--:|--:|--:|--|
@@ -153,11 +195,11 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 27 | TimeVAE | 5 | 0.363 ± 0.011 | ±0.014 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 12 reps)_ | — | 0.684 ± 0.048 | — | — |
 
-The noise-floor row is what real data scores against an **independent** draw of itself under this scorer — two halves of the pinned real split by CALENDAR day (an H-day gap between them, so they share ZERO days), each bootstrapped to the competitor path budget, mean ± sd over reps. That is what a *perfect* generator (real reality, same budget) scores; a competitor at or inside that band is at the task's resolution limit, and differences there are sampling noise, not skill (audit F1-FLOOR-1/F2-OW-1). **Field vs floor:** the field scores BETTER than independent real data on 21/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity. (For reference, the OLD even/odd path-parity self-score was 0.939. It is **not** a floor: the pinned 'paths' are stride-~4 OVERLAPPING rolling windows, so its two halves share ~99.3% of their calendar days — it prices estimator jitter on near-identical data, at half the path budget, and materially over-states the resolution on every task.)
+**Field vs floor:** the field scores BETTER than independent real data on 21/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity
 
 ## F5 — Martingale / no-drift check
 
-Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, **Holm-corrected across the field for multiplicity** before the p>0.05 threshold — audit AGG-HOLM-2; untestable at n<2).
+Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
 | Rank | Competitor | n | score | 95% CI | vs #1 |
 |--:|--|--:|--:|--:|--|
@@ -190,11 +232,11 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 27 | TimeVAE | 5 | 0.044 ± 0.018 | ±0.022 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.348 ± 0.082 | — | — |
 
-The noise-floor row is what real data scores against an **independent** draw of itself under this scorer — two halves of the pinned real split by CALENDAR day (an H-day gap between them, so they share ZERO days), each bootstrapped to the competitor path budget, mean ± sd over reps. That is what a *perfect* generator (real reality, same budget) scores; a competitor at or inside that band is at the task's resolution limit, and differences there are sampling noise, not skill (audit F1-FLOOR-1/F2-OW-1). **Field vs floor:** the field scores BETTER than independent real data on 24/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity. (For reference, the OLD even/odd path-parity self-score was 0.908. It is **not** a floor: the pinned 'paths' are stride-~4 OVERLAPPING rolling windows, so its two halves share ~99.3% of their calendar days — it prices estimator jitter on near-identical data, at half the path budget, and materially over-states the resolution on every task.)
+**Field vs floor:** the field scores BETTER than independent real data on 24/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity
 
 ## T2 — Options pricing / IV smile
 
-Metric: bps (lower better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, **Holm-corrected across the field for multiplicity** before the p>0.05 threshold — audit AGG-HOLM-2; untestable at n<2).
+Metric: bps (lower better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
 | Rank | Competitor | n | bps | 95% CI | vs #1 |
 |--:|--|--:|--:|--:|--|
@@ -227,11 +269,11 @@ Metric: bps (lower better). CI = 95% t-interval over seeds; '≈#1' = statistica
 | 27 | TimeGAN | 5 | 2006.209 ± 6.241 | ±7.749 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 1384.348 ± 470.844 | — | — |
 
-The noise-floor row is what real data scores against an **independent** draw of itself under this scorer — two halves of the pinned real split by CALENDAR day (an H-day gap between them, so they share ZERO days), each bootstrapped to the competitor path budget, mean ± sd over reps. That is what a *perfect* generator (real reality, same budget) scores; a competitor at or inside that band is at the task's resolution limit, and differences there are sampling noise, not skill (audit F1-FLOOR-1/F2-OW-1). **Field vs floor:** 52% of the field within ±1 floor-sd — ranking here is within sampling noise. (For reference, the OLD even/odd path-parity self-score was 225.358. It is **not** a floor: the pinned 'paths' are stride-~4 OVERLAPPING rolling windows, so its two halves share ~99.3% of their calendar days — it prices estimator jitter on near-identical data, at half the path budget, and materially over-states the resolution on every task.)
+**Field vs floor:** 52% of the field within ±1 floor-sd — ranking here is within sampling noise
 
 ## T3 — Predictive validity (TSTR, multi-family)
 
-Metric: rho (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, **Holm-corrected across the field for multiplicity** before the p>0.05 threshold — audit AGG-HOLM-2; untestable at n<2).
+Metric: rho (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
 | Rank | Competitor | n | rho | 95% CI | vs #1 |
 |--:|--|--:|--:|--:|--|
@@ -264,11 +306,11 @@ Metric: rho (higher better). CI = 95% t-interval over seeds; '≈#1' = statistic
 | 27 | TimeVAE | 5 | -0.304 ± 0.075 | ±0.093 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | -0.170 ± 0.194 | — | — |
 
-The noise-floor row is what real data scores against an **independent** draw of itself under this scorer — two halves of the pinned real split by CALENDAR day (an H-day gap between them, so they share ZERO days), each bootstrapped to the competitor path budget, mean ± sd over reps. That is what a *perfect* generator (real reality, same budget) scores; a competitor at or inside that band is at the task's resolution limit, and differences there are sampling noise, not skill (audit F1-FLOOR-1/F2-OW-1). **Field vs floor:** the field scores BETTER than independent real data on 23/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity. (For reference, the OLD even/odd path-parity self-score was 0.976. It is **not** a floor: the pinned 'paths' are stride-~4 OVERLAPPING rolling windows, so its two halves share ~99.3% of their calendar days — it prices estimator jitter on near-identical data, at half the path budget, and materially over-states the resolution on every task.)
+**Field vs floor:** the field scores BETTER than independent real data on 23/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity
 
 ## T5 — VaR/ES risk backtesting
 
-Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, **Holm-corrected across the field for multiplicity** before the p>0.05 threshold — audit AGG-HOLM-2; untestable at n<2).
+Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
 | Rank | Competitor | n | score | 95% CI | vs #1 |
 |--:|--|--:|--:|--:|--|
@@ -301,7 +343,7 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 25.5 | TimeVAE | 5 | 0.000 ± 0.000 | ±0.000 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.420 ± 0.098 | — | — |
 
-The noise-floor row is what real data scores against an **independent** draw of itself under this scorer — two halves of the pinned real split by CALENDAR day (an H-day gap between them, so they share ZERO days), each bootstrapped to the competitor path budget, mean ± sd over reps. That is what a *perfect* generator (real reality, same budget) scores; a competitor at or inside that band is at the task's resolution limit, and differences there are sampling noise, not skill (audit F1-FLOOR-1/F2-OW-1). **Field vs floor:** the field sits worse than the honest floor — genuine resolution. (For reference, the OLD even/odd path-parity self-score was 0.944. It is **not** a floor: the pinned 'paths' are stride-~4 OVERLAPPING rolling windows, so its two halves share ~99.3% of their calendar days — it prices estimator jitter on near-identical data, at half the path budget, and materially over-states the resolution on every task.)
+**Field vs floor:** the field sits worse than the honest floor — genuine resolution
 
 ## Pending competitors (not yet generated)
 
