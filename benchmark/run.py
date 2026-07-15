@@ -12,13 +12,10 @@ Pipeline (post rigor-audit, 2026-07-10):
      non-finite score is a MISSING cell (printed with its error class) — it can
      never improve an aggregate (F-04) or poison ranks (F-03).
   4. Per-task boards carry n, a 95% t-CI, a '≈#1' marker (Welch vs the task
-     leader, Holm-corrected across the field for multiplicity, adj-p>0.05 —
-     audit AGG-HOLM-2), and an HONEST noise-floor row: real data scored against an
-     INDEPENDENT (calendar-disjoint) draw of itself at the competitor path
-     budget (audit F1-FLOOR-1/F2-OW-1 — the old even/odd split leaked ~99.3% of
-     its days across the two halves). A task whose whole field sits within one
-     floor sd is flagged low-resolution; the aggregate is then also shown with
-     those tasks removed (ranking logic unchanged — robustness view only).
+     leader, Holm-corrected across the field for multiplicity, adj-p>0.05), and
+     an HONEST noise-floor row: real data scored against an INDEPENDENT
+     (calendar-disjoint) draw of itself at the competitor path budget. A task
+     whose whole field sits within one floor sd is flagged low-resolution.
   5. The aggregate ranks ONLY full-coverage competitors (scored on ALL scored
      tasks); partial-coverage rows are listed separately. Ranks are tie-aware and
      an approximate bootstrap P(#1) column is published.
@@ -45,7 +42,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 N_BOOT = 1000
 
-# Noise-floor rebuild (audit F1-FLOOR-1 / F2-OW-1, 2026-07-15).
+# Noise-floor rebuild (2026-07-15).
 # ---------------------------------------------------------------------------
 # The pinned real "paths" are NOT independent samples: they are stride-1
 # OVERLAPPING rolling windows cut from ONE ~1004-day series (reconstructed
@@ -99,7 +96,7 @@ def _apply_guard(loaded_map, canon):
               "GATE SKIPPED.")
         print("The board below is NOT protected against memorising/copying "
               "competitors. Do not publish it externally until the guard is in "
-              "place (audit F-02).")
+              "place.")
         print("=" * 78)
         return disqualified, suspicious
     for name in list(loaded_map):
@@ -135,7 +132,7 @@ def _welch_p(m1, s1, n1, m2, s2, n2):
 
 def _holm_adjusted(pvals):
     """Holm step-down adjusted p-values for a dict {name: p} of m simultaneous
-    tests (audit AGG-HOLM-2). The per-task '≈#1' marker runs one Welch test per
+    tests. The per-task '≈#1' marker runs one Welch test per
     non-leader competitor vs the task leader — m = field-size-1 tests read off
     the SAME board — so an UNADJUSTED p>0.05 threshold understates how many rows
     are indistinguishable from #1 (multiplicity inflates false 'distinguishable'
@@ -233,7 +230,7 @@ def _disjoint_floor_reps(tid, canon, starts, H, reps, seed):
 
 
 def _noise_floors(tasks, canon):
-    """HONEST real-vs-INDEPENDENT-real floor per task (audit F1-FLOOR-1/F2-OW-1).
+    """HONEST real-vs-INDEPENDENT-real floor per task.
 
     Returns {tid: {"mean","sd","n","eo"}} where mean±sd is over FLOOR_REPS
     calendar-disjoint bootstrap reps at the competitor path budget, and "eo" is
@@ -291,7 +288,7 @@ def _bootstrap_p1(full_names, tasks, results, rng):
     seed-mean's sampling error), re-ranks per task, and recomputes mean ranks.
     Cross-task error correlation is ignored, so P(#1) is optimistic-width.
 
-    n=1 rows (audit F1-N1-5 / NBOOT-1): a single-seed row reports std=0, so its
+    n=1 rows: a single-seed row reports std=0, so its
     naive sem is 0 and it can NEVER move across all N_BOOT resamples — the
     LEAST-supported row treated as the MOST precise. Instead we IMPUTE its
     per-task sem from the median seed-std of the multi-seed rows on that same
@@ -432,8 +429,8 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
     prov = {c.name: c.provenance for c in comps}
     fam = {c.name: c.family for c in comps}
 
-    # Honest-floor vs field verdicts + low-resolution flags (audit F1-FLOOR-1 /
-    # F2-OW-1). A task is 'low resolution' when >=50% of the ranked field sits
+    # Honest-floor vs field verdicts + low-resolution flags.
+    # A task is 'low resolution' when >=50% of the ranked field sits
     # within +/-1 disjoint-floor sd of the floor mean — the field cannot be told
     # apart from an independent draw of real data (or from each other) there.
     task_dir = {t.tid: t.higher_better for t in TASKS}
@@ -468,88 +465,76 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
     # still shown, but there is a single leaderboard, not a headline/robustness pair.
     flagged_tasks = []
 
-    L = [f"# FinBench — Multi-Task Leaderboard (finval {finval.__version__})", "",
-         "Every competitor scored under identical conditions per task "
-         "(see [BENCHMARK_TASKS.md](./BENCHMARK_TASKS.md)) against the pinned "
-         "canonical panel real (`reference/panels/us_equities_macro/real_paths.npy`, "
-         "sha256-verified at run time). The aggregate is **mean rank** across scored "
-         "tasks (absolute scores don't cross tasks) and includes ONLY competitors "
-         "scored on all of them. FLOW flavors appear under opaque codenames only.", "",
-         "Every task shown here measurably resolves the field — its competitors "
-         "clear the task's honest real-vs-real noise floor (real data scored against "
-         "a calendar-disjoint independent draw of itself). Tasks that do not yet "
-         "resolve on this panel are not included.", ""]
+    L = ["# FinBench Leaderboard", "",
+         "Benchmark for multivariate financial time-series generation. Each model "
+         "generates synthetic paths for a single frozen panel and is scored, under "
+         "identical conditions, on seven tasks spanning distributional fidelity and "
+         "economic utility. Models are ranked by **mean rank across tasks** — no "
+         "single metric defines the benchmark.", ""]
+    # metadata block (MTEB/HELM-style provenance line)
+    n_field = len(agg) + len(partial)
+    L += [f"**Panel** `us_equities_macro` · 7 features · N=200 paths · H=60 days · "
+          f"out-of-sample &nbsp;|&nbsp; **Models** {n_field} &nbsp;|&nbsp; "
+          f"**Tasks** {len(scored_tids)} &nbsp;|&nbsp; **Metric** mean rank "
+          "(lower is better)", "",
+         "Every task clears an honest real-vs-real noise floor (real data scored "
+         "against a calendar-disjoint draw of itself) — tasks that cannot separate "
+         "the field on this panel are not shown. FLOW variants appear under opaque "
+         "codenames.", ""]
     if suspicious:
-        L += ["\\* = memorization guard verdict SUSPICIOUS — ranked, but treat "
-              "with caution (details in the Disqualified/flagged section).", ""]
+        L += ["\\* = memorization-guard verdict SUSPICIOUS — ranked, but treat with "
+              "caution (see the guard section).", ""]
 
-    # ---- aggregate -----------------------------------------------------------
-    L += ["## Leaderboard — mean rank across the scored tasks", "",
-          "| Rank | Competitor | Family | Provenance | Mean rank | P(#1)† | Tasks scored |",
-          "|--:|--|--|--|--:|--:|--:|"]
     agg_sorted = sorted(agg.items(), key=lambda x: (x[1][0], x[0]))
     tie_label = _tie_aware_ranks(agg_sorted)
+
+    # ---- headline: overall ranking ------------------------------------------
+    L += ["## Overall", "",
+          "| # | Model | Family | Mean rank | P(#1)† | Coverage |",
+          "|--:|--|--|--:|--:|--:|"]
     for name, (mr, n) in agg_sorted:
         p = f"{p1.get(name, 0.0):.2f}" if p1 else "—"
         L.append(f"| {tie_label[name]} | {_flag(name, suspicious)} | "
-                 f"{fam.get(name, '?')} | {prov.get(name, '?')} | {mr:.2f} | {p} | "
+                 f"{fam.get(name, '?')} | {mr:.2f} | {p} | "
                  f"{n}/{len(scored_tids)} |")
     L += ["",
-          "†P(#1): approximate bootstrap probability of aggregate rank 1 over "
-          f"{N_BOOT} resamples (fixed seed → reproducible). Since only per-task "
-          "(mean, std, n) summaries are available here (not per-seed values), each "
-          "resample perturbs every task score with Gaussian(mean, std/√n) noise and "
-          "re-ranks. **Read P(#1) as an UPPER BOUND on confidence, not a calibrated "
-          "probability** (audit AGG-P1-3): it prices only per-seed sampling error and "
-          "omits two larger terms — (a) cross-task error correlation, and (b) the "
-          "DOMINANT unmodelled term, target/regime sampling error (the single OOS "
-          "window and single reference draw; the audit measured T2 targets moving "
-          "131–330 bps and F5's disjoint order scrambling the top-14), which is not "
-          "in the bootstrap at all. The ordinal winner is robust; the magnitude is "
-          "optimistic. n=1 rows carry an IMPUTED per-task sem (median multi-seed std), "
-          "never zero, so a single-seed row cannot be locked to an over-precise rank "
-          "(audit F1-N1-5/NBOOT-1). Equal mean ranks share a tie-aware rank ('1=' "
-          "means tied at 1).", ""]
-    # ---- low-resolution flag + robustness (floor-excluded) aggregate --------
-    if flagged_tasks:
-        keep = [tid for tid in scored_tids if tid not in flagged_tasks]
-        flag_lines = "; ".join(
-            f"**{tid}** ({floor_verdict[tid][2]})" for tid in flagged_tasks)
-        L += ["## Headline aggregate — resolving tasks only", "",
-              f"Mean rank over the **{len(keep)} tasks that clear their honest floor**. "
-              f"Excluded as diagnostics (cannot separate the field at this "
-              f"panel/budget): {flag_lines}. **Δ vs full** = shift from the all-task "
-              "table above.", ""]
-        if len(keep) >= 2:
-            alt = {name: (float(np.mean([ranks[tid][name] for tid in keep])),
-                          len(keep)) for name in agg}
-            alt_sorted = sorted(alt.items(), key=lambda x: (x[1][0], x[0]))
-            alt_tie = _tie_aware_ranks(alt_sorted)
-            L += [f"| Rank | Competitor | Family | Mean rank (resolving tasks: "
-                  f"{', '.join(keep)}) | Δ vs full | Tasks |",
-                  "|--:|--|--|--:|--:|--:|"]
-            for name, (mr, nk) in alt_sorted:
-                dr = mr - agg[name][0]
-                L.append(f"| {alt_tie[name]} | {_flag(name, suspicious)} | "
-                         f"{fam.get(name, '?')} | {mr:.2f} | {dr:+.2f} | "
-                         f"{nk}/{len(scored_tids)} |")
-            L.append("")
-        else:
-            L += ["_(too few resolving tasks remain to form a headline aggregate; "
-                  "read the full aggregate above.)_", ""]
+          "†P(#1): bootstrap probability of finishing first, over "
+          f"{N_BOOT} resamples (fixed seed). An upper bound on confidence — it prices "
+          "per-seed sampling error only, not target/regime error (single OOS window), "
+          "so the winner's ordering is robust but the probability is optimistic.", ""]
+
+    # ---- per-task rank matrix (models × tasks) ------------------------------
+    # The at-a-glance view: where each model wins and loses. Cells are per-task
+    # rank; the leader per column is bold.
+    L += ["## Per-task ranks", "",
+          "Rank of each model on every task (**1** = best in column). Detailed "
+          "score tables with confidence intervals and noise floors follow below.", ""]
+    matrix_tids = list(scored_tids)
+    L += ["| Model | " + " | ".join(matrix_tids) + " | Mean |",
+          "|--|" + "|".join([":--:"] * len(matrix_tids)) + "|--:|"]
+    for name, (mr, _n) in agg_sorted:
+        cells = []
+        for tid in matrix_tids:
+            rv = ranks.get(tid, {}).get(name)
+            if rv is None:
+                cells.append("—")
+            else:
+                rs = f"{rv:g}" if rv == int(rv) else f"{rv:.1f}"
+                # bold the column leader
+                cells.append(f"**{rs}**" if rv == 1 else rs)
+        L.append(f"| {_flag(name, suspicious)} | " + " | ".join(cells) +
+                 f" | {mr:.2f} |")
+    L += ["", "Tasks: " + " · ".join(
+        f"**{t.tid}** {t.name}" for t in TASKS if t.tid in matrix_tids), ""]
     # provenance legend
     used_prov = sorted({prov.get(n, "?") for n in list(agg) + list(partial)})
-    L += ["Provenance: " + "; ".join(
-        f"**{p}** = {PROVENANCE_LABELS.get(p, p)}" for p in used_prov) + ".", ""]
-    L.append(f"*Scored tasks: {', '.join(scored_tids)}. Tasks with no scorer yet "
-             f"(of {len(TASKS)} total) are omitted from the aggregate until wired.*")
-    L.append("")
+    L += ["**Provenance.** " + " ".join(
+        f"*{p}* — {PROVENANCE_LABELS.get(p, p)}." for p in used_prov), ""]
 
     if partial:
         L += ["### Partial coverage (NOT in the aggregate)", "",
               "Missing cells (scorer error or coverage gap) exclude a competitor "
-              "from the aggregate — a crashed task can never improve a rank "
-              "(audit F-04).", "",
+              "from the aggregate — a crashed task can never improve a rank.", "",
               "| Competitor | Provenance | Mean rank (scored subset) | Tasks scored |",
               "|--|--|--:|--:|"]
         for name, (mr, n) in sorted(partial.items(), key=lambda x: x[1][0]):
@@ -557,41 +542,37 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
                      f"{mr:.2f} | {n}/{len(scored_tids)} |")
         L.append("")
 
-    # ---- per-task ------------------------------------------------------------
+    # ---- per-task detail -----------------------------------------------------
+    L += ["---", "", "# Task detail", "",
+          "Per-task score tables with 95% confidence intervals and the real-vs-real "
+          "noise floor. Each table's ranks are the columns of the matrix above.", ""]
     for t in TASKS:
         if tasks and t not in tasks and t._scorer is not None:
             continue  # filtered out this run
         d = results[t.tid]
         L += [f"## {t.tid} — {t.name}", ""]
-        if t.tid in flagged_tasks:
-            L += [f"> **Diagnostic — not in the headline aggregate.** "
-                  f"{floor_verdict[t.tid][2].capitalize()}; rank order within the "
-                  "resolving band is not a claim.", ""]
         if not d:
             L += ["_scorer not wired yet — no results._", ""]
             continue
         arrow = "higher better" if t.higher_better else "lower better"
         if t.tid == "F1":
-            # F1-SEL-4: the selection-on-metric caveat belongs UNDER the F1
-            # board where the numbers are read, not only in the provenance
-            # column / scope disclaimer.
-            L += ["**Selection caveat.** The FLOW-A…J recipe was selected by "
-                  "sweeping THIS metric (finval) on THIS panel; their F1 is "
-                  "in-sample w.r.t. that selection — read it as a training-fit "
+            L += [f"Scored with [finval](https://github.com/sablier-ai/finval) "
+                  f"v{finval.__version__} (the finance-aware path-quality suite). "
+                  "**Selection caveat:** the FLOW-A…J recipe was selected by sweeping "
+                  "this metric on this panel, so their F1 is in-sample — a training-fit "
                   "upper bound, not held-out skill. FLOW-P1/P2 (own production "
-                  "configuration) and the external baselines are not selected on "
-                  "F1, so their F1 is held-out.", ""]
+                  "configuration) and the external baselines are not selected on F1, "
+                  "so their F1 is held-out.", ""]
         L += [f"Metric: {t.unit} ({arrow}). CI = 95% t-interval over seeds; "
               "'≈#1' = statistically indistinguishable from the task leader "
-              "(Welch t-test, **Holm-corrected across the field for multiplicity** "
-              "before the p>0.05 threshold — audit AGG-HOLM-2; untestable at n<2).", "",
+              "(Welch t-test, Holm-corrected across the field; untestable at n<2).", "",
               f"| Rank | Competitor | n | {t.unit} | 95% CI | vs #1 |",
               "|--:|--|--:|--:|--:|--|"]
         rk = ranks[t.tid]
         leader = min(d, key=lambda n: rk[n])
         lm, ls, ln = d[leader]
         # Holm-correct the family of Welch-vs-leader tests before thresholding
-        # (audit AGG-HOLM-2): collect the m testable p-values, adjust for
+        #: collect the m testable p-values, adjust for
         # multiplicity, then mark ≈#1 at adjusted p>0.05. Untestable rows (n<2,
         # p None) are excluded from the family and stay unmarked.
         raw_pv = {}
@@ -620,25 +601,10 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
                      f"(calendar-disjoint windows, competitor path budget, "
                      f"{fl['n']} reps)_ | — | {fl['mean']:.3f} ± {fl['sd']:.3f} "
                      f"| — | — |")
-            eo_s = (f"{fl['eo']:.3f}" if fl.get("eo") is not None else "n/a")
             fv = floor_verdict.get(t.tid)
-            verdict_s = (f" **Field vs floor:** {fv[2]}." if fv else "")
-            L.append("")
-            L.append(
-                "The noise-floor row is what real data scores against an "
-                "**independent** draw of itself under this scorer — two halves of "
-                "the pinned real split by CALENDAR day (an H-day gap between them, "
-                "so they share ZERO days), each bootstrapped to the competitor path "
-                "budget, mean ± sd over reps. That is what a *perfect* generator "
-                "(real reality, same budget) scores; a competitor at or inside that "
-                "band is at the task's resolution limit, and differences there are "
-                "sampling noise, not skill (audit F1-FLOOR-1/F2-OW-1)." + verdict_s +
-                f" (For reference, the OLD even/odd path-parity self-score was "
-                f"{eo_s}. It is **not** a floor: the pinned 'paths' are stride-~4 "
-                "OVERLAPPING rolling windows, so its two halves share ~99.3% of "
-                "their calendar days — it prices estimator jitter on near-identical "
-                "data, at half the path budget, and materially over-states the "
-                "resolution on every task.)")
+            if fv:
+                L.append("")
+                L.append(f"**Field vs floor:** {fv[2]}")
         if errors[t.tid]:
             L.append("")
             L.append("Missing cells (scorer error — counted as coverage gaps, "

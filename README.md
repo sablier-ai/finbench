@@ -24,7 +24,7 @@ calibration, strategy-rank transfer — not on the distributional-matching proxi
 
 - [Task suite](./BENCHMARK_TASKS.md) — the seven tasks, metrics, and fairness contract
 - [Panel & submission spec](./BENCHMARK.md) — the frozen panel and protocol
-- [Leaderboard](./MULTITASK_LEADERBOARD.md) — current per-task boards + aggregate
+- [Leaderboard](./MULTITASK_LEADERBOARD.md) — overall ranking, per-task matrix, and detailed score tables
 - [Getting started](./GETTING_STARTED.md) — submit your model
 - [finval](https://github.com/sablier-ai/finval) — the scoring library FinBench uses
 
