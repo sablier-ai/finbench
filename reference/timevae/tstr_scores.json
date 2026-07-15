@@ -1,0 +1,8 @@
+{
+  "method": "timevae",
+  "spearman_rho": -0.7878260869565217,
+  "p_value": 4.876128032683251e-06,
+  "mean_abs_sharpe_gap": 6.264009219111917,
+  "n_strategy_variants": 24,
+  "strategy_family_version": "v1"
+}

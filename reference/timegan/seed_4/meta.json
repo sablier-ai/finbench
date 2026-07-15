@@ -1,0 +1,21 @@
+{
+ "method": "timegan",
+ "seed": 4,
+ "paper": null,
+ "code": null,
+ "framework": "pytorch 2.7.0 (birdx0810 port)",
+ "gpu": "A10 24GB",
+ "hyperparameters_tuned": false,
+ "horizon": 60,
+ "n_paths": 200,
+ "feature_order": [
+  "IWM",
+  "QQQ",
+  "SPY",
+  "TLT",
+  "VIX",
+  "TNX",
+  "DXY"
+ ],
+ "panel": "us_equities_macro_2010_2023"
+}

@@ -1,0 +1,21 @@
+{
+ "method": "kovae",
+ "seed": 3,
+ "paper": null,
+ "code": null,
+ "framework": "pytorch 2.7.0 (azencot-group port)",
+ "gpu": "A100 SXM4 40GB",
+ "hyperparameters_tuned": false,
+ "horizon": 60,
+ "n_paths": 200,
+ "feature_order": [
+  "IWM",
+  "QQQ",
+  "SPY",
+  "TLT",
+  "VIX",
+  "TNX",
+  "DXY"
+ ],
+ "panel": "us_equities_macro_2010_2023"
+}

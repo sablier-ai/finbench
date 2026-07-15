@@ -1,0 +1,20 @@
+{
+ "method": "sablier_flow",
+ "seed": 0,
+ "paper": null,
+ "code": null,
+ "gpu": "not reported",
+ "hyperparameters_tuned": false,
+ "horizon": 60,
+ "n_paths": 200,
+ "feature_order": [
+  "IWM",
+  "QQQ",
+  "SPY",
+  "TLT",
+  "VIX",
+  "TNX",
+  "DXY"
+ ],
+ "panel": "us_equities_macro_2010_2023"
+}

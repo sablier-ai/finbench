@@ -1,0 +1,8 @@
+{
+  "baseline": "timegan_600",
+  "seed": 3,
+  "horizon": 60,
+  "n_paths": 200,
+  "epochs_per_phase": 600,
+  "wall_seconds": 2377.6
+}

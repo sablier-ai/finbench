@@ -1,0 +1,77 @@
+{
+  "overall_quality": "acceptable",
+  "overall_score": 0.5589285714285714,
+  "pass_rate": 0.9285714285714286,
+  "metrics": {
+    "acf_returns": {
+      "value": 0.19466556789679607,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "volatility_clustering": {
+      "value": 0.11594551870857427,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "leverage_effect": {
+      "value": 0.08019692365169286,
+      "quality": "good",
+      "passed": true
+    },
+    "cross_correlation": {
+      "value": 0.20924994529263458,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "drawdown_distribution": {
+      "value": 0.25857142857142856,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "marginal_ks": {
+      "value": 0.13714285714285715,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "energy_distance": {
+      "value": 0.3050406779413237,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "tail_quantiles": {
+      "value": 1.109992514273225,
+      "quality": "poor",
+      "passed": false
+    },
+    "pearson_corr": {
+      "value": 0.20924994529263458,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "spearman_corr": {
+      "value": 0.22021530234052264,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "copula_distance": {
+      "value": 0.03531557006843472,
+      "quality": "excellent",
+      "passed": true
+    },
+    "tail_dependence_upper": {
+      "value": 0.11449357169967864,
+      "quality": "acceptable",
+      "passed": true
+    },
+    "tail_dependence_lower": {
+      "value": 0.0943143862040358,
+      "quality": "good",
+      "passed": true
+    },
+    "correlation_breakdown": {
+      "value": 0.24976752643974018,
+      "quality": "good",
+      "passed": true
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+ "method": "FLOW-G",
+ "family": "flow",
+ "panel": "us_equities_macro_2010_2023",
+ "horizon": 60,
+ "n_paths": 200,
+ "train_end": "2019-12-31",
+ "finval_version": "0.6.1",
+ "arch": "private"
+}

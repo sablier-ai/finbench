@@ -1,0 +1,8 @@
+{
+  "method": "kovae",
+  "spearman_rho": 0.8599999999999999,
+  "p_value": 7.19741550802296e-08,
+  "mean_abs_sharpe_gap": 0.30783332068767627,
+  "n_strategy_variants": 24,
+  "strategy_family_version": "v1"
+}

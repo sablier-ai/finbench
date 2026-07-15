@@ -1,0 +1,24 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Don't ignore reference results — those are the leaderboard
+# !reference/*/seed_*/synth_paths.npy
+# !reference/*/seed_*/real_paths.npy
+
+# Local working directories
+local/
+scratch/
+
+# agent-local / internal tooling — NEVER commit (contain the forbidden-token guard list)
+CLAUDE.local.md
+*.local.md
+.claude/
+.wf_*.js

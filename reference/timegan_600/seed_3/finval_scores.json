@@ -1,0 +1,20 @@
+{
+  "overall_score": 0.3544642857142857,
+  "pass_rate": 0.5714285714285714,
+  "metrics": {
+    "acf_returns": 0.06887874600077253,
+    "volatility_clustering": 0.11645790938341996,
+    "leverage_effect": 0.1282723751196659,
+    "cross_correlation": 0.3842422068014447,
+    "drawdown_distribution": 0.355,
+    "marginal_ks": 0.10133333333333334,
+    "energy_distance": 0.20887258565400293,
+    "tail_quantiles": 0.9679712153927884,
+    "pearson_corr": 0.3842422068014447,
+    "spearman_corr": 0.41824374781447105,
+    "copula_distance": 0.05052046736118494,
+    "tail_dependence_upper": 0.16094486322867857,
+    "tail_dependence_lower": 0.15443482603234332,
+    "correlation_breakdown": 0.4035771356190781
+  }
+}

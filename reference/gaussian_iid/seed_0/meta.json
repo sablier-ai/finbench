@@ -1,0 +1,43 @@
+{
+ "method": "Gaussian-iid",
+ "family": "classical",
+ "provenance": "published-defaults",
+ "description": "iid multivariate Gaussian with train sample mean/covariance",
+ "seed": 0,
+ "n_paths": 200,
+ "horizon": 60,
+ "features": [
+  "IWM",
+  "QQQ",
+  "SPY",
+  "TLT",
+  "VIX",
+  "TNX",
+  "DXY"
+ ],
+ "units": "native returns \u2014 log-returns IWM/QQQ/SPY/TLT/DXY, diffs VIX/TNX",
+ "training": {
+  "panel": "us_equities_macro_2010_2023 (sablier_flow.demo_data)",
+  "panel_rows": 3522,
+  "train_end": "2019-12-31",
+  "train_return_rows": 2516,
+  "first_return_date": "2010-01-05",
+  "last_train_date": "2019-12-31",
+  "return_types": {
+   "IWM": "log_return",
+   "QQQ": "log_return",
+   "SPY": "log_return",
+   "TLT": "log_return",
+   "VIX": "diff",
+   "TNX": "diff",
+   "DXY": "log_return"
+  },
+  "citation": "Unconditional multivariate normal at train sample moments (RiskMetrics-style iid Gaussian baseline)",
+  "note": "fit/resampled on native increments of the canonical panel levels <= 2019-12-31 only (no look-ahead into the OOS reference)"
+ },
+ "deviations": [],
+ "arch_version": "8.0.0",
+ "finval_version": "0.6.1",
+ "finval_overall_vs_canon": 0.7713241003431641,
+ "created": "2026-07-13"
+}

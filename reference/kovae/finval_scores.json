@@ -1,0 +1,67 @@
+{
+  "method": "kovae",
+  "n_seeds": 5,
+  "overall_quality": "acceptable",
+  "overall_score_mean": 0.6160714285714286,
+  "overall_score_std": 0.023957871187497762,
+  "pass_rate_mean": 0.7428571428571429,
+  "pass_rate_std": 0.06388765649999396,
+  "metrics": {
+    "acf_returns": {
+      "mean": 0.023569922445940618,
+      "std": 0.001219676336140937
+    },
+    "copula_distance": {
+      "mean": 0.03772028172545615,
+      "std": 0.0008099573736242316
+    },
+    "correlation_breakdown": {
+      "mean": 0.2984569556410394,
+      "std": 0.008315547942105941
+    },
+    "cross_correlation": {
+      "mean": 0.30766671287187264,
+      "std": 0.007015514108301789
+    },
+    "drawdown_distribution": {
+      "mean": 0.126,
+      "std": 0.021132478147464422
+    },
+    "energy_distance": {
+      "mean": 0.37641917781844947,
+      "std": 0.028453394667409905
+    },
+    "leverage_effect": {
+      "mean": 0.03246124474551305,
+      "std": 0.0012921989822627289
+    },
+    "marginal_ks": {
+      "mean": 0.14619285714285712,
+      "std": 0.002366255233950796
+    },
+    "pearson_corr": {
+      "mean": 0.30766671287187264,
+      "std": 0.007015514108301789
+    },
+    "spearman_corr": {
+      "mean": 0.3394793694296223,
+      "std": 0.007903899751270224
+    },
+    "tail_dependence_lower": {
+      "mean": 0.13291101650853382,
+      "std": 0.003691713395621956
+    },
+    "tail_dependence_upper": {
+      "mean": 0.1206902739905307,
+      "std": 0.0011739594975936987
+    },
+    "tail_quantiles": {
+      "mean": 0.9789020977647604,
+      "std": 0.01642647227123163
+    },
+    "volatility_clustering": {
+      "mean": 0.031104123366058705,
+      "std": 0.0015586846504113954
+    }
+  }
+}

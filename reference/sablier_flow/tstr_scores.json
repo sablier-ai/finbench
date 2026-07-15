@@ -1,0 +1,8 @@
+{
+  "method": "sablier_flow",
+  "spearman_rho": 0.8504347826086956,
+  "p_value": 1.4210625789641306e-07,
+  "mean_abs_sharpe_gap": 0.36097459460926923,
+  "n_strategy_variants": 24,
+  "strategy_family_version": "v1"
+}

@@ -1,0 +1,31 @@
+{
+ "panel": "us_equities_macro_2010_2023",
+ "source": "sablier_flow.demo_data (public); no competitor archive involved",
+ "construction": "examples/build_horizon_reference.py (deterministic, no RNG)",
+ "transforms": "log-diff IWM/QQQ/SPY/TLT/DXY, first-diff VIX/TNX (identical to the H=60 canonical real, examples/submit.py)",
+ "oos_split_date": "2020-01-01",
+ "train_end": "2019-12-31",
+ "date_span": [
+  "2020-01-03",
+  "2020-12-31",
+  "2023-12-28"
+ ],
+ "date_span_note": "first window covers span[0]..span[1]; last window ends span[2]",
+ "horizon": 252,
+ "n_windows": 753,
+ "stride": 1,
+ "windows_are_overlapping": true,
+ "n_independent": 4,
+ "n_disjoint_complete": 3,
+ "n_independent_note": "round(T/H) with T=1004 OOS return days; stride-1 windows are serially dependent \u2014 n_windows is NOT a sample size; pass n_independent to finval.validate_full()",
+ "subsample": null,
+ "subsample_note": "ALL stride-1 windows kept (audit T2-1: no seeded subsample)",
+ "dtype": "float32",
+ "shape": [
+  753,
+  252,
+  7
+ ],
+ "sha256": "609230b9d6fb70acdc65e2b923952312728de4ea17d24369649f68ac0d229db5",
+ "protocol": "HORIZON_PROTOCOL.md"
+}

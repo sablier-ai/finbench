@@ -1,0 +1,8 @@
+{
+  "method": "diffusion_ts",
+  "spearman_rho": -0.7243478260869565,
+  "p_value": 6.273725296044193e-05,
+  "mean_abs_sharpe_gap": 93.64669407348181,
+  "n_strategy_variants": 24,
+  "strategy_family_version": "v1"
+}

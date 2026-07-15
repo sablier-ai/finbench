@@ -1,0 +1,8 @@
+{
+  "method": "timegan",
+  "spearman_rho": 0.5347826086956522,
+  "p_value": 0.007093267681508555,
+  "mean_abs_sharpe_gap": 4.909703601796019,
+  "n_strategy_variants": 24,
+  "strategy_family_version": "v1"
+}

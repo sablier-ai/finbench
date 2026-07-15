@@ -1,0 +1,67 @@
+{
+  "method": "timevae",
+  "n_seeds": 5,
+  "overall_quality": "poor",
+  "overall_score_mean": 0.4030357142857143,
+  "overall_score_std": 0.013826318810035269,
+  "pass_rate_mean": 0.7142857142857143,
+  "pass_rate_std": 0.0,
+  "metrics": {
+    "acf_returns": {
+      "mean": 0.10190908798908198,
+      "std": 0.009725968323928877
+    },
+    "copula_distance": {
+      "mean": 0.024936644375639687,
+      "std": 0.0008075597011956322
+    },
+    "correlation_breakdown": {
+      "mean": 0.27904013762626073,
+      "std": 0.03261406882767865
+    },
+    "cross_correlation": {
+      "mean": 0.23337657491774175,
+      "std": 0.01976910079844417
+    },
+    "drawdown_distribution": {
+      "mean": 0.5478571428571428,
+      "std": 0.05576234191199468
+    },
+    "energy_distance": {
+      "mean": 1.4429226117192344,
+      "std": 0.020853738286051717
+    },
+    "leverage_effect": {
+      "mean": 0.15593083806832386,
+      "std": 0.01615333983719693
+    },
+    "marginal_ks": {
+      "mean": 0.4745309523809524,
+      "std": 0.002000134632656707
+    },
+    "pearson_corr": {
+      "mean": 0.23337657491774175,
+      "std": 0.01976910079844417
+    },
+    "spearman_corr": {
+      "mean": 0.2141208038996761,
+      "std": 0.012841910863048965
+    },
+    "tail_dependence_lower": {
+      "mean": 0.09862384212814507,
+      "std": 0.015573704408313467
+    },
+    "tail_dependence_upper": {
+      "mean": 0.09133213069506319,
+      "std": 0.008061436655018819
+    },
+    "tail_quantiles": {
+      "mean": 1.9770842546209402,
+      "std": 0.0031452539913176263
+    },
+    "volatility_clustering": {
+      "mean": 0.11460310418761827,
+      "std": 0.013617424133915857
+    }
+  }
+}
