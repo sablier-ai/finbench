@@ -4,7 +4,7 @@ Task F4 of BENCHMARK_TASKS.md ("Distributional distance"): Wasserstein-1 / MMD /
 signature-MMD (Sig-W1). Lower distance = better; the reported score inverts to
 0-1 (higher = better).
 
-SHAPE / SCALE SEPARATION (finding T5-F4-2, critical). A distributional distance must
+SHAPE / SCALE SEPARATION. A distributional distance must
 NOT pay a bonus for shrinking. The OLD build standardized both samples by the REAL
 per-feature std, so every W1/MMD/signature component grew ~linearly (or, for the
 level-2 signature, ~quadratically) in the synth-vs-real scale factor c — and |c-1| is
@@ -35,7 +35,7 @@ inputs are the OWN-std-standardized increments unless noted):
 3. **RBF-MMD^2, unbiased estimator** (Gretton, Borgwardt, Rasch, Schölkopf, Smola,
    "A Kernel Two-Sample Test", JMLR 13, 2012 — Eq. 3 / Lemma 6) on flattened windows
    (T*F = 420-dim). MULTI-BANDWIDTH Gaussian mixture: k = sum over
-   sigma in `sigma0 * {0.25,0.5,1,2,4}` (finding T5-F4-4) so the statistic does not
+   sigma in `sigma0 * {0.25,0.5,1,2,4}` so the statistic does not
    saturate beyond ~3x and remains sensitive across scales. `sigma0` is PINNED ONCE
    from the REAL sample only (median pairwise Euclidean distance within real), so
    EVERY competitor is scored under the IDENTICAL kernel — the OLD median-heuristic on
@@ -43,7 +43,7 @@ inputs are the OWN-std-standardized increments unless noted):
    MMD^2 not comparable across the field (not a metric on the field). Both samples are
    subsampled to `MMD_MAX_N = 200` windows (= the canonical real's n_paths, seeded), so
    the estimator is pinned at a fixed sample size and cannot be gamed by submitting
-   more/fewer paths (finding T5-F4-5).
+   more/fewer paths.
 4. **Signature-MMD (Sig-W1-style JOINT path statistic)** — Ni, Szpruch, Wiese, Liao,
    Xiao, "Sig-Wasserstein GANs for Time Series Generation" (arXiv 2006.05421 /
    ICAIF'21); Chevyrev & Oberhauser, "Signature moments to characterize laws of
@@ -57,28 +57,28 @@ inputs are the OWN-std-standardized increments unless noted):
    CROSS-ASSET lead-lag content a per-marginal statistic cannot see. For F=7 this is
    8 + 64 = 72 signature coordinates per window.
    ESTIMATOR: the UNBIASED two-sample MMD^2 (Gretton et al. 2012, Lemma 6) between the
-   two clouds of per-window signature vectors (finding T5-F4-5). "Unbiased" matters:
-   the OLD biased plug-in carried a +Var(S)/n_paths bias that is each competitor's OWN
-   signature variance / path count, so it partly SCORED DISPERSION and was
-   n_paths-gameable; the unbiased estimator has expectation 0 when the two laws match,
+   two clouds of per-window signature vectors. "Unbiased" matters: the biased plug-in
+   carries a +Var(S)/n_paths term that depends on each competitor's own signature
+   variance and path count (so it would partly score dispersion and vary with
+   n_paths); the unbiased estimator has expectation 0 when the two laws match,
    so an INDEPENDENT resample of the SAME distribution scores ~0 (asserted in
    `_self_test`), not merely an identical sample, and the sample size is PINNED to
    `MMD_MAX_N`. The kernel is the multi-bandwidth RBF with `sigma0` pinned from the REAL
-   signatures only (finding T5-F4-4), NOT the LINEAR / expected-signature kernel
+   signatures only , NOT the LINEAR / expected-signature kernel
    K=<S_i,S_j>: the linear kernel compares only the MEAN signature and is BLIND to a
    temporal-order scramble that preserves marginals + cross-section (verified — it fails
-   the order control in `_self_test`), which would regress the T5-F4-3 order-sensitivity;
+   the order control in `_self_test`), which would lose the order-sensitivity;
    the RBF form is the SAME Lemma-6 unbiased estimator but distributional and
    order-sensitive.
    Signature coordinates are WHITENED by the REAL panel's per-coordinate std before the
    kernel (real-only => no synth-scale leakage) and divided by sqrt(n_coords) so the
    kernel distance is the MEAN per-coordinate whitened squared difference over the 72
-   coordinates (finding T5-F4-6): the OLD raw-L2 sum let one feature/level carry up to
+   coordinates: the OLD raw-L2 sum let one feature/level carry up to
    ~77% of the component, and the c^2/c^4 level-2 magnitudes dominate; per-coordinate
    whitening + averaging equalizes levels 1 and 2 and all channels, matching the equal
    per-feature weighting of the other components. Per-feature signature distances (the
    pinned-RBF MMD^2 restricted to each feature's channels) are exposed in `detail`.
-   This closes finding T5-F4-3 (a per-marginal mean-only form was EXACTLY blind —
+   This keeps the metric order-sensitive (a per-marginal mean-only form is blind —
    distance 0.0 — to a perturbation that destroys contemporaneous cross-asset
    dependence while preserving marginals; the joint form scores it worse: see the
    order/joint scramble controls in `_self_test`).
@@ -117,11 +117,11 @@ FEATURES_DEFAULT = ["IWM", "QQQ", "SPY", "TLT", "VIX", "TNX", "DXY"]
 N_PROJ = 64          # sliced-W1 random projections
 PROJ_SEED = 20260710  # fixed => identical slices for every competitor
 MMD_MAX_N = 200      # subsample cap per side = canonical real n_paths => estimator
-                     # pinned at a fixed sample size (n_paths-ungameable; F4-5)
+                     # pinned at a fixed sample size (independent of n_paths)
 MMD_SEED = 20260710
 SIG_SEED = 20260711  # subsample seed for the signature two-sample statistic
 SIG_DEPTH = 2        # truncated signature depth (depth-2 on the JOINT (F+1)-dim path)
-MMD_BW_FACTORS = (0.25, 0.5, 1.0, 2.0, 4.0)  # multi-bandwidth mixture (F4-4)
+MMD_BW_FACTORS = (0.25, 0.5, 1.0, 2.0, 4.0)  # multi-bandwidth mixture
 _EPS = 1e-12
 
 
@@ -165,7 +165,7 @@ def _sliced_w1(synth: np.ndarray, real: np.ndarray, rng: np.random.Generator) ->
 def _pin_sigma_real(Y: np.ndarray) -> float:
     """Bandwidth PINNED from the REAL sample only: median pairwise Euclidean distance
     WITHIN real. Real is fixed across the field, so every competitor is scored under
-    the identical kernel (finding T5-F4-4)."""
+    the identical kernel."""
     sq = (Y * Y).sum(axis=1)
     D2 = sq[:, None] + sq[None, :] - 2.0 * (Y @ Y.T)
     np.maximum(D2, 0.0, out=D2)
@@ -183,9 +183,9 @@ def _rbf_mmd2_multi_pre(X: np.ndarray, Y: np.ndarray, sigma0: float) -> float:
     sample-sized X:(n,D), Y:(m,D).
 
     Kernel = sum over sigma in sigma0*MMD_BW_FACTORS of the Gaussian kernel — a mixture
-    that does not saturate beyond ~3x (finding T5-F4-4). sigma0 is pinned from REAL
+    that does not saturate beyond ~3x. sigma0 is pinned from REAL
     only by the caller (identical kernel for every competitor). Unbiased => expectation
-    0 under matching laws (finding T5-F4-5)."""
+    0 under matching laws."""
     n, m = len(X), len(Y)
     Z = np.concatenate([X, Y], axis=0).astype(np.float64)
     sq = (Z * Z).sum(axis=1)
@@ -205,7 +205,7 @@ def _rbf_mmd2_multi_pre(X: np.ndarray, Y: np.ndarray, sigma0: float) -> float:
 def _rbf_mmd2_multi(X: np.ndarray, Y: np.ndarray, sigma0: float,
                     rng: np.random.Generator) -> float:
     """Subsample X, Y to a PINNED n = min(len X, len Y, MMD_MAX_N) then unbiased
-    multi-bandwidth RBF-MMD^2 (finding T5-F4-5: fixed sample size => n_paths-ungameable).
+    multi-bandwidth RBF-MMD^2 (fixed sample size, independent of n_paths).
     sigma0 pinned from REAL only by the caller."""
     n = min(len(X), len(Y), MMD_MAX_N)
     return _rbf_mmd2_multi_pre(_subsample(X, n, rng), _subsample(Y, n, rng), sigma0)
@@ -281,21 +281,19 @@ def _sig_mmd2(synth_std: np.ndarray, real_std: np.ndarray,
               per_feature: bool = False):
     """Distributional signature distance: UNBIASED two-sample MMD^2 (Gretton et al.
     2012, Lemma 6) over the per-window JOINT-path depth-2 signature vectors, with the
-    bandwidth PINNED from the REAL signatures only + the multi-bandwidth mixture
-    (finding T5-F4-4/5). Unbiased => an independent resample of the same law scores ~0
-    (finding T5-F4-5); the sample size is PINNED to MMD_MAX_N.
+    bandwidth PINNED from the REAL signatures only + the multi-bandwidth mixture. Unbiased => an independent resample of the same law scores ~0; the sample size is PINNED to MMD_MAX_N.
 
     The RBF (not linear/expected-signature) kernel is used deliberately: the linear
     kernel compares only the MEAN signature, which is BLIND to a temporal-order
     scramble that preserves marginals+cross-section (verified: it fails the order
-    control in `_self_test`), regressing the T5-F4-3 order-sensitivity. The RBF form is
+    control in `_self_test`), losing the order-sensitivity. The RBF form is
     the same Lemma-6 unbiased estimator but distributional and order-sensitive.
 
     Signature coordinates are WHITENED by the REAL panel's per-coordinate std
     (real-only => no synth-scale leakage) AND divided by sqrt(n_coords), so the kernel's
     squared distance is the MEAN per-coordinate whitened squared difference — no single
-    feature/level can carry the component and levels 1/2 are equalized (finding
-    T5-F4-6). If `per_feature`, also returns a (F,) vector: the same pinned-RBF MMD^2
+    feature/level can carry the component and levels 1/2 are equalized.
+    If `per_feature`, also returns a (F,) vector: the same pinned-RBF MMD^2
     restricted to the signature coords whose channels involve that feature."""
     n = min(len(synth_std), len(real_std), MMD_MAX_N)
     S = _sig_features(_subsample(synth_std, n, rng))
@@ -303,9 +301,9 @@ def _sig_mmd2(synth_std: np.ndarray, real_std: np.ndarray,
     sd = R.std(axis=0)
     sd = np.where(sd > _EPS, sd, 1.0)
     D = S.shape[1]
-    Sw = S / (sd * np.sqrt(D))     # real-whitened + averaged over coords (T5-F4-6)
+    Sw = S / (sd * np.sqrt(D))     # real-whitened + averaged over coords
     Rw = R / (sd * np.sqrt(D))
-    sigma0 = _pin_sigma_real(Rw)   # bandwidth from REAL signatures only (T5-F4-4)
+    sigma0 = _pin_sigma_real(Rw)   # bandwidth from REAL signatures only
     d = _rbf_mmd2_multi_pre(Sw, Rw, sigma0)
     if not per_feature:
         return d
@@ -363,7 +361,7 @@ def score(loaded, feature_names=None) -> dict:
         w1_step_raw_feat.append(_w1_per_feature_step(synth, real))
         w1_cum_raw_feat.append(_w1_per_feature_cum(synth, real))
 
-        # SHAPE / SCALE separation (finding T5-F4-2). Standardize EACH sample by ITS
+        # SHAPE / SCALE separation. Standardize EACH sample by ITS
         # OWN per-feature std => shape distances are scale-invariant (score(c*x) exactly
         # symmetric); dispersion is scored separately by the log-symmetric `disp` term.
         s_scale, r_scale = _own_std(synth), _own_std(real)
@@ -462,7 +460,7 @@ def _self_test():
     s = score([(x, x.copy())])
     assert s["mean"] > 0.999, f"self-distance should score ~1, got {s['mean']}"
 
-    # --- finding T5-F4-2: SCALE SYMMETRY. score(c*x) == score(x/c) exactly, for real ---
+    # --- control: SCALE SYMMETRY. score(c*x) == score(x/c) exactly, for real ---
     xr = rng.standard_normal((200, 60, 7)) * (1.0 + rng.random(7))  # heteroscale feats
     for c in (0.5, 0.25, 1.0 / 3.0, 2.0 / 3.0):
         su = score([(xr * c, xr.copy())])["mean"]
@@ -476,7 +474,7 @@ def _self_test():
         assert abs(d_faith[k] - d_scaled[k]) < 1e-6, f"{k} not scale-invariant"
     assert d_scaled["disp"] > 1.0, "disp must charge a pure 3x rescale"
 
-    # --- finding T5-F4-5: UNBIASED => independent resample of the SAME dist scores ~0 ---
+    # --- control: UNBIASED => independent resample of the SAME dist scores ~0 ---
     base = rng.standard_normal((400, 60, 7))
     A = base[:200]; B = base[200:]            # two independent draws, same law
     sc = _own_std(A)
@@ -487,7 +485,7 @@ def _self_test():
         _pin_sigma_real((B / sc).reshape(200, -1)), np.random.default_rng(4))
     assert abs(d_mmd_indep) < 0.05, f"independent resample mmd should be ~0, got {d_mmd_indep}"
 
-    # ORDER + JOINT SENSITIVITY CONTROLS (finding T5-F4-3). Build a panel with strong
+    # ORDER + JOINT SENSITIVITY CONTROLS. Build a panel with strong
     # within-window temporal SHAPE (up/flat/down drift profile) AND strong
     # contemporaneous cross-asset correlation (a shared per-step factor).
     T2, F2 = 60, 7

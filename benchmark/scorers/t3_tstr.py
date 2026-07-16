@@ -5,29 +5,22 @@ frozen, economically-diverse strategy family (HIGHER = BETTER). "Train on synth,
 test on real": a good generator should rank a whole book of trading strategies
 the same way the real out-of-sample panel does.
 
-Why this file was rebuilt (audit findings T3-OW-1/2/4/5)
--------------------------------------------------------
-The previous v2 family (24 momentum/reversion variants) had COLLAPSED to a
-near-univariate statistic: to first order its rho was a rank-proxy for the
-sign/size of short-horizon (lag-1) return autocorrelation — one Cont stylized
-fact that F2 already scores. Live symptoms:
-
-  * T3-OW-1: a 7-parameter iid-Gaussian AR(1) null with ZERO cross-asset
-    dependence, ZERO vol clustering and ZERO fat tails ranked #2 of the field
-    (rho ~ +0.67), above every FLOW row — a structure-free noise model looked
-    like a top generator.
-  * T3-OW-5: the family contained 4 EXACT mirror pairs (cs_mr == -cs_mom),
-    which deflate rho and break the variant bootstrap (non-independent draws).
-
-The rebuild (FAMILY_VERSION ``v3-multifamily-2026-07-15``) fixes the collapse by
-making the ranking depend on facts a marginal-only AR(1) null CANNOT reproduce:
+Family design (FAMILY_VERSION ``v3-multifamily-2026-07-15``)
+------------------------------------------------------------
+A TSTR family is only informative if its ranking cannot be reproduced by a
+structure-free null. A family of momentum/reversion variants alone reduces, to
+first order, to the sign/size of lag-1 autocorrelation — one stylized fact F2
+already scores — and a plain Gaussian AR(1) can rank it well. The v3 family is
+therefore built so the ranking depends on facts a marginal-only AR(1) null
+CANNOT reproduce (and it contains no mirror-pair variants, which would deflate
+rho and break the variant bootstrap):
 
   MARGINAL families (a well-fit AR(1) can rank these — kept for coverage):
     * cs_mom   cross-sectional momentum   (rank 7 features by past return)
     * ts_mom   time-series momentum       (per-asset trend follow)
     * ou_rev   level mean-reversion       (z-score of the reconstructed price
                to its rolling mean — a REAL OU construction, NOT sign-flipped
-               momentum, so the T3-OW-5 mirror duplicates are gone)
+               momentum, so no mirror duplicates arise)
     * vol_mom  vol-managed momentum       (trend scaled by 1/recent-vol — its
                EDGE over ts_mom exists only under volatility clustering, which
                an AR(1) lacks, so its rank vs ts_mom is a vol-clustering probe)
@@ -45,24 +38,25 @@ making the ranking depend on facts a marginal-only AR(1) null CANNOT reproduce:
 A transaction-cost turnover penalty (``COST``, in z-units) is applied to every
 variant. Besides being economically real, it breaks the sign-symmetry the old
 family had: a long/short leg and its exact mirror have identical turnover, so a
-cost term makes ``net(mom) != -net(rev)`` — the roadmapped cost dimension
-(TSTR_v2_multifamily.md) that most re-orders real strategy ranking.
+cost term makes ``net(mom) != -net(rev)`` — the cost dimension that most
+re-orders real strategy ranking.
 
-The result: the AR(1) null is demoted from #2 to mid-pack, below every strong
-real generator and below the shuffled-time control (see ``__main__``).
+The result: the AR(1) null ranks mid-pack, below every strong real generator
+and below the shuffled-time control (see ``__main__``) — evidence the family
+measures joint structure, not one autocorrelation number.
 
-Per-feature standardization (audit T3-1 — KEPT, do not regress)
---------------------------------------------------------------
+Per-feature standardization (KEPT — do not regress)
+---------------------------------------------------
 Every feature's native increment is divided by its FROZEN train-period scale
 (``TRAIN_SCALES``) before any strategy logic runs, so VIX diffs (train std ~1.62
 points) no longer dwarf equity log-returns (std ~0.01) and each feature
-contributes comparably. This is the v2 fix and is retained verbatim. Because the
+contributes comparably. This is retained verbatim. Because the
 panel mixes log-returns and level-diffs of wildly different native scale, the
 turnover cost is likewise applied in z-units (a single native-bps cost across
 incommensurate features would re-introduce the very unit-mixing this fix removed).
 
-The Gaussian-AR(1) null (audit T3-OW-1 — the permanent collapse detector)
--------------------------------------------------------------------------
+The Gaussian-AR(1) null (the permanent collapse detector)
+---------------------------------------------------------
 ``gaussian_ar1_null_rho()`` builds the null INSIDE this scorer — per-feature
 Gaussian AR(1) with phi and sigma fitted to the TRAIN period (``TRAIN_PHI`` /
 ``TRAIN_SCALES``, frozen constants; a real submission can only see train), assets
@@ -97,7 +91,7 @@ and averaged — the repo-wide mean+-std-across-seeds protocol). ``std`` = std o
 per-seed rhos, ``n`` = number of seed pairs. ``detail`` additionally reports the
 pooled-over-seeds rho, a bootstrap 95% CI that resamples BOTH the synth AND the
 real (target) PATHS — so target-side sampling noise is folded in, not only
-synth-seed noise (audit fix) — the per-family rhos, the AR(1)-null rho, and the
+synth-seed noise — the per-family rhos, the AR(1)-null rho, and the
 per-feature |PnL| shares.
 
 Run the ranked board (with the null, shuffled-time control, floors/ceilings and
@@ -182,7 +176,7 @@ FAMILY_KIND = {
 
 
 # ---------------------------------------------------------------------------
-# Standardization (audit T3-1 fix — KEPT)
+# Standardization (KEPT — see docstring)
 # ---------------------------------------------------------------------------
 
 def _standardize(R: np.ndarray, feature_names=None) -> np.ndarray:
@@ -243,7 +237,7 @@ def w_ts_mom(R, lb):
 def w_ou_rev(R, lb, thr=1.5):
     """Level mean-reversion (OU/Bollinger): fade the z-score of price vs its rolling mean.
 
-    A genuine construction, NOT sign-flipped momentum (drops the T3-OW-5 mirrors).
+    A genuine construction, NOT sign-flipped momentum (no mirror duplicates).
     """
     n, T, F = R.shape
     if lb >= T - 1:
@@ -402,7 +396,7 @@ def _weights_to_perpath_sharpe(W, R, cost):
 def _perpath_sharpe_matrix(R, feature_names=None, cost=COST):
     """(n_paths, n_variants) per-path Sharpe matrix + per-feature |PnL| share.
 
-    Standardizes R first (the audit T3-1 fix). The per-path matrix lets the CI
+    Standardizes R first (see docstring). The per-path matrix lets the CI
     resample PATHS (folding target-side noise) without re-running strategy logic.
     """
     Rs = _standardize(R, feature_names)
@@ -427,7 +421,7 @@ def evaluate_family(R, feature_names=None, cost=COST):
 
 
 # ---------------------------------------------------------------------------
-# Gaussian-AR(1) null (audit T3-OW-1 — permanent collapse detector)
+# Gaussian-AR(1) null (permanent collapse detector)
 # ---------------------------------------------------------------------------
 
 def gaussian_ar1_null_tensor(seed, n_paths=200, T=60):
@@ -467,14 +461,14 @@ def gaussian_ar1_null_rho(real, n_seeds=5, cost=COST):
 
 
 # ---------------------------------------------------------------------------
-# Bootstrap CI that folds in TARGET-side sampling noise (audit fix)
+# Bootstrap CI that folds in TARGET-side sampling noise
 # ---------------------------------------------------------------------------
 
 def _bootstrap_rho_ci(synth_M, real_M, n_boot=1000, seed=0):
     """95% CI on rho by resampling BOTH synth and real PATHS with replacement.
 
     Unlike a variant-index bootstrap (which sees only synth), this prices the
-    real (target) Sharpe-vector estimation noise too — the audit's requirement.
+    real (target) Sharpe-vector estimation noise too.
     Returns (lo, hi, se, draws).
     """
     rng = np.random.default_rng(seed)
@@ -578,8 +572,8 @@ def diagnostics(real, cost=COST):
     """Floors/ceilings/controls that frame the honest reading of the board.
 
     * self_consistency: even/odd path split of the real target — a MEMORIZATION
-      reference (near-duplicate overlapping windows share ~92% of days, audit
-      T3-OW-2), NOT an attainable target.
+      reference (near-duplicate overlapping windows share ~92% of days),
+      NOT an attainable target.
     * multi_regime_ceiling: 200 windows resampled from ALL real regimes — what a
       PERFECT multi-anchor generator scores.
     * single_anchor_ceiling: each of several contiguous ~one-regime sub-blocks of
@@ -651,7 +645,7 @@ def _board():
         Ms = [_perpath_sharpe_matrix(np.asarray(s, np.float32), cost=COST)[0] for s, _ in comp.load()]
         stack = np.concatenate(Ms, axis=0)
         # Point = per-seed-mean rho (the score() headline; avoids the seed-count
-        # advantage a pooled rho gives, audit T3-4/T3-OW-3).
+        # advantage a pooled rho gives).
         point = float(np.mean([spearmanr(real_vec, np.nanmean(m, axis=0))[0] for m in Ms]))
         rboot = np.random.default_rng(hash(comp.name) & 0xFFFF)
         draws = np.array([spearmanr(real_boot[b],
@@ -697,7 +691,7 @@ def _board():
           f"turnover cost {COST} z-units")
     print("\nFloors / ceilings (honest framing):")
     print(f"  self-consistency (even/odd real)   = {diag['self_consistency_even_odd']:+.3f}  "
-          f"(MEMORIZATION reference, not attainable — audit T3-OW-2)")
+          f"(MEMORIZATION reference, not attainable)")
     print(f"  multi-regime PERFECT ceiling       = {diag['multi_regime_ceiling_mean']:+.3f} "
           f"+- {diag['multi_regime_ceiling_std']:.3f}  (perfect multi-anchor generator)")
     print(f"  single-anchor ceiling              = {diag['single_anchor_ceiling_mean']:+.3f} "

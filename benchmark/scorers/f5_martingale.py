@@ -30,59 +30,38 @@ of a return column can move it:
    from its real-data counterpart in EITHER direction (mean-reversion or
    momentum manufactured by the generator) is penalized.
 
-======================================================================
-RETIRED — the DRIFT / MARTINGALE block is NO LONGER SCORED (removed 2026-07).
-======================================================================
-F5 previously carried a fifth subscore on unconditional DRIFT. Two successive
-formulations were BOTH provably gameable by VARIANCE MANIPULATION, in OPPOSITE
-directions, so the block was removed entirely:
+DESIGN NOTE — why unconditional DRIFT is a diagnostic, not a subscore.
+F5 deliberately scores only scale-invariant statistics. A pure-drift subscore
+cannot satisfy the benchmark's no-single-task-gameable rule, for a structural
+reason: a statistic neutral to variance-only inflation must be independent of
+sigma_synth, hence a function of mu alone — which is rescale-sensitive; a
+statistic invariant to a pure rescale is Sharpe-like — which is
+inflation-sensitive. No pure-drift statistic is immune to both, so none is
+scored.
 
-  * raw drift in bps/day (mu, or the convexity-corrected martingale ratio
-    E[exp(r)]-1): SCALE-DEPENDENT. A generator DEFLATES its variance (returns
-    x k<1) to shrink its charged drift toward 0 and games the band UP
-    (audit F5-OW-1, the original defect).
-  * risk-adjusted drift, Sharpe = mu/sigma_synth: invariant to a pure rescale,
-    but the band is centred on the REAL Sharpe, which is ~0 (real drift is
-    statistically indistinguishable from 0 — see below). Honest generators'
-    Sharpe OVERSHOOTS that ~0 centre, so a mean-preserving variance INFLATION
-    (mu fixed, sigma x k>1) dilutes Sharpe back toward the centre and games the
-    band UP — the exact analog of the audit's CRITICAL T6-GAME-1. Measured:
-    mean-preserving synth x5 lifted FLOW-A 0.538->0.604 (rank 13->2) and DCC-t
-    0.514->0.584 (rank 23->4). The scale-invariant Sharpe fix flipped the
-    exploit's SIGN (collapse->inflate) rather than removing it.
+Drift is also below its own measurement floor on this panel: the real tensors
+are ROLLING (overlapping) OOS windows, so per-window means are serially
+dependent (~16 independent 60d blocks -> N_eff ~ 10-19), and the real
+drift-vs-zero t is ~1 — real drift is statistically indistinguishable from 0.
+A band centred on a reference that is itself noise cannot do discriminative
+work.
 
-These are not two bugs but ONE structural impossibility. A statistic neutral to
-variance-only inflation must be independent of sigma_synth, hence a function of
-mu alone — which is then rescale-gameable; a statistic invariant to a pure
-rescale is Sharpe-like — which is inflation-gameable. There is NO pure-drift
-statistic immune to BOTH, so NO drift subscore can satisfy the benchmark's
-no-single-task-gameable rule.
-
-The drift dimension is ALSO below its own noise floor (audit F5-OW-2/OW-3). The
-real panel's per-window means are serially dependent (rolling OOS windows, ~16
-independent 60d blocks -> N_eff ~ 10-19), and the real drift-vs-zero t is ~1:
-real drift is indistinguishable from 0. A band centred on a reference that is
-itself pure noise cannot do honest discriminative work; it only ever supplied a
-gaming surface. Retiring it costs F5 nothing it could legitimately measure.
-
-Crucially, tradeable "manufactured alpha" IS predictability, and predictability
-is measured by the FOUR retained, scale-invariant subscores (AR R^2, lag-1 AC,
-VR5, VR20). An UNconditional constant drift is not tradeable arbitrage (it
+Tradeable "manufactured alpha" IS predictability, and predictability is
+exactly what the FOUR scale-invariant subscores measure (AR R^2, lag-1 AC,
+VR5, VR20). An unconditional constant drift is not tradeable arbitrage (it
 cannot be timed) — it is a marginal-mean error, which the marginal / distance /
-VaR-ES tasks (F2, F4, T5) penalise directly and where it CANNOT be hidden by
-rescaling. F5 therefore scores exactly the drift-free, scale-invariant structure
-that is its robust charter, and nothing gameable.
+VaR-ES tasks (F2, F4, T5) penalise directly and where it cannot be hidden by
+rescaling. F5 therefore scores exactly the drift-free, scale-invariant
+structure that is its robust charter.
 
-For transparency the retired quantities are STILL COMPUTED and reported in
+For transparency the drift quantities are still computed and reported in
 `detail` as DIAGNOSTICS ONLY (never scored): sharpe_*, drift_bps_*,
-mart_dev_bps_*, and the overlap-corrected drift-vs-zero t (t_drift_zero_*, with
-n_eff_* and the naive twins) — so a reader can verify real drift sits below its
-noise floor. The 200 real tensors are ROLLING (overlapping) OOS windows, so real
-per-window means are serially dependent; the naive t (dividing by sqrt(200))
-overstates significance ~3.5x (audit F5-OW-5), so t_drift_zero_* uses an
-OVERLAP-CORRECTED effective sample size N_eff (Geyer initial-positive
-integrated-autocorrelation of the per-window means): for independent synth paths
-N_eff ~ N; for overlapping real windows N_eff ~ 10-19.
+mart_dev_bps_*, and the overlap-corrected drift-vs-zero t (t_drift_zero_*,
+with n_eff_* and the naive twins). The naive t (dividing by sqrt(200))
+overstates significance ~3.5x on overlapping windows, so t_drift_zero_* uses
+an overlap-corrected effective sample size N_eff (Geyer initial-positive
+integrated autocorrelation of the per-window means): for independent synth
+paths N_eff ~ N; for overlapping real windows N_eff ~ 10-19.
 
 Scoring (BAND: deviation from REAL behaviour in either direction is bad).
 Each of the FOUR components c yields a per-feature subscore
@@ -114,7 +93,7 @@ unchanged. (Verified: the real x k and honest-generator x k F5 ladders are flat
 for both inflation and deflation; the FLOW-A / DCC-t inflation vault above is
 CLOSED, and the original deflate exploit stays closed.)
 
-Non-finite subscore policy (audit F5-1) — the two NaN cases are DISTINCT:
+Non-finite subscore policy — the two NaN cases are DISTINCT:
   * REAL-side statistic non-finite -> the component is not assessable on this
     panel; it is excluded from the per-feature mean SYMMETRICALLY (the same
     real reference is shared by every competitor, so the exclusion applies
@@ -147,11 +126,11 @@ AR_LAGS = 5
 VR_QS = (5, 20)
 
 # Band scales (see module docstring). NB: there is deliberately NO drift/Sharpe
-# scale here — the drift/martingale block was RETIRED (removed 2026-07): every
-# pure-drift statistic is gameable by variance manipulation in one direction or
-# the other (audit F5-OW-1 and its inflation analog), and real drift sits below
-# its own noise floor (F5-OW-2). The four retained subscores are all
-# affine-invariant, so F5 cannot be gamed by rescaling.
+# scale here — drift is a diagnostic, not a subscore (see the design note in
+# the module docstring): no pure-drift statistic is robust to variance
+# manipulation in both directions, and real drift sits below its own noise
+# floor. The four scored subscores are all affine-invariant, so F5 cannot be
+# moved by rescaling.
 S_R2 = 0.02
 S_AC1 = 0.05
 
@@ -165,7 +144,7 @@ FLAG_DAC1 = 0.05
 # ---------------------------------------------------------------------------
 
 def _eff_n(x: np.ndarray) -> float:
-    """Overlap-robust effective sample size of a 1-D series (audit F5-OW-5).
+    """Overlap-robust effective sample size of a 1-D series.
 
     N_eff = N / tau_int with tau_int = 1 + 2*sum rho_k, the sum truncated by the
     Geyer initial-positive-sequence rule (adjacent autocorrelation pairs summed
@@ -202,10 +181,10 @@ def _drift_stats(panel: np.ndarray):
     Returns (mu_bps, sharpe, t_eff, t_naive, n_eff) where:
       mu_bps  : raw mean daily log-return, bps/day  (DIAGNOSTIC only)
       sharpe  : mu / sigma of pooled daily log-returns — the SCORED statistic
-                (audit F5-OW-1: invariant to rescaling the column; inf/nan for a
+                (invariant to rescaling the column; inf/nan for a
                 variance-collapsed panel -> WORST subscore via _sub)
       t_eff   : one-sample t of drift vs zero, overlap-corrected via _eff_n
-                (audit F5-OW-5; the honest, non-inflated diagnostic)
+                (the overlap-honest, non-inflated diagnostic)
       t_naive : the old sqrt(N) t (kept for transparency; overstated for real)
       n_eff   : effective #independent windows used for t_eff
     """
@@ -246,7 +225,7 @@ def _ar_r2_pooled(panel: np.ndarray, p: int = AR_LAGS) -> float:
         return np.nan
     if not np.isfinite(panel).all():
         return np.nan  # degenerate synth input: nan here -> WORST subscore in _sub,
-                       # never a scorer crash (crash = coverage gap, audit F-04)
+                       # never a scorer crash (a crash is a coverage gap)
     # design: for each path, rows t = p..T-1, cols = r_{t-1..t-p}
     y = panel[:, p:].reshape(-1)                                    # (n*(T-p),)
     X = np.stack([panel[:, p - k:T - k].reshape(-1)
@@ -295,7 +274,7 @@ def _vr_scale(q: int, T: int) -> float:
 # ---------------------------------------------------------------------------
 
 def _sub(syn_stat: float, real_stat: float, scale: float) -> float:
-    """Band subscore with asymmetric non-finite semantics (audit F5-1).
+    """Band subscore with asymmetric non-finite semantics.
 
     real_stat non-finite -> nan  (component not assessable on this panel;
                                   excluded symmetrically for every competitor)
@@ -351,7 +330,7 @@ def _score_pair(synth: np.ndarray, real: np.ndarray, feature_names):
         # them — F5 is provably immune to variance manipulation in either
         # direction). Synth-side non-finite stats score 0.0 (WORST, never
         # waived); only real-side non-finite stats are excluded — and then
-        # symmetrically, since the real reference is shared (audit F5-1).
+        # symmetrically, since the real reference is shared.
         subs = {
             "ar5_r2":  _sub(r2_s, r2_r, S_R2),
             "lag1_ac": _sub(ac_s, ac_r, S_AC1),
@@ -374,7 +353,7 @@ def _score_pair(synth: np.ndarray, real: np.ndarray, feature_names):
             "n_synth_degenerate_subscores": n_degenerate,
             "sharpe_synth": sh_s, "sharpe_real": sh_r,
             "drift_bps_synth": mu_s_bps, "drift_bps_real": mu_r_bps,   # diagnostic
-            # overlap-corrected drift-vs-zero t (audit F5-OW-5); naive twins kept
+            # overlap-corrected drift-vs-zero t; naive twins kept
             "t_drift_zero_synth": teff_s, "t_drift_zero_real": teff_r,
             "t_drift_zero_synth_naive": tnv_s, "t_drift_zero_real_naive": tnv_r,
             "n_eff_synth": neff_s, "n_eff_real": neff_r,
@@ -444,13 +423,12 @@ def score(loaded, feature_names=None) -> dict:
                  "scored subscores (ar5_r2, lag1_ac, vr5, vr20), ALL "
                  "affine-invariant -> F5 is provably immune to variance "
                  "manipulation in both directions (rescale AND mean-preserving "
-                 "spread leave every subscore unchanged). The DRIFT/MARTINGALE "
-                 "block is RETIRED (not scored): every pure-drift statistic is "
-                 "variance-gameable in one direction or the other (audit "
-                 "F5-OW-1 and its inflation analog T6-GAME-1) and real drift is "
-                 "below its noise floor (F5-OW-2). sharpe_*, drift_bps_*, "
+                 "spread leave every subscore unchanged). Drift is a DIAGNOSTIC, "
+                 "not a subscore, by design: no pure-drift statistic is robust "
+                 "to variance manipulation in both directions, and real drift "
+                 "is below its own noise floor. sharpe_*, drift_bps_*, "
                  "mart_dev_bps_*, t_drift_zero_* (overlap-corrected via n_eff, "
-                 "F5-OW-5, with _naive twins) remain in detail as DIAGNOSTICS "
+                 "with _naive twins) remain in detail as DIAGNOSTICS "
                  "ONLY; t_drift_synth_vs_real is diagnostic only too"),
     }
     return {

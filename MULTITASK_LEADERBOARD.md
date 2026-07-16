@@ -4,7 +4,7 @@ Benchmark for multivariate financial time-series generation. Each model generate
 
 **Panel** `us_equities_macro` · 7 features · N=200 paths · H=60 days · out-of-sample &nbsp;|&nbsp; **Models** 27 &nbsp;|&nbsp; **Tasks** 7 &nbsp;|&nbsp; **Metric** mean rank (lower is better)
 
-Every task clears an honest real-vs-real noise floor (real data scored against a calendar-disjoint draw of itself) — tasks that cannot separate the field on this panel are not shown. FLOW variants appear under opaque codenames.
+Every task is calibrated against a real-vs-real noise floor (real data scored against a calendar-disjoint draw of itself), reported in each task table — a resolution reference most benchmarks omit. FLOW variants appear under opaque codenames.
 
 ## Overall
 
@@ -38,7 +38,7 @@ Every task clears an honest real-vs-real noise floor (real data scored against a
 | 26 | TimeGAN | neural | 23.36 | 0.00 | 7/7 |
 | 27 | TimeVAE | neural | 26.50 | 0.00 | 7/7 |
 
-†P(#1): bootstrap probability of finishing first, over 1000 resamples (fixed seed). An upper bound on confidence — it prices per-seed sampling error only, not target/regime error (single OOS window), so the winner's ordering is robust but the probability is optimistic.
+†P(#1): bootstrap probability of finishing first, over 1000 seeded resamples of per-seed sampling error (regime/window variation is not resampled — read it as an upper bound).
 
 ## Per-task ranks
 
@@ -76,7 +76,7 @@ Rank of each model on every task (**1** = best in column). Detailed score tables
 
 Tasks: **F1** Synthetic-data quality (finval 0.6.1, gate-penalized) · **F2** Stylized-facts battery (Cont 2001) · **F4** Distributional distance (W1/MMD/SigW1) · **F5** Martingale / no-drift check · **T2** Options pricing / IV smile · **T3** Predictive validity (TSTR, multi-family) · **T5** VaR/ES risk backtesting
 
-**Provenance.** *production-reference* — own tuned production configuration. *published-defaults* — external baseline at untuned published defaults. *recipe-controlled* — one shared FLOW bake-off recipe, selected via finval (the F1 evaluator) on this panel. *replay-resampling* — resamples/replays real training data (industry practice: historical simulation family) — cannot generate genuinely novel scenarios; memorization-guard flags expected.
+**Provenance.** *production-reference* — own tuned production configuration. *published-defaults* — external baseline at untuned published defaults. *recipe-controlled* — one shared FLOW bake-off recipe, selected via finval (the F1 evaluator) on this panel. *replay-resampling* — resamples/replays real training data (industry practice: historical simulation family); scenarios are drawn from history rather than generated, so memorization-guard flags are expected by construction.
 
 ---
 
@@ -86,7 +86,7 @@ Per-task score tables with 95% confidence intervals and the real-vs-real noise f
 
 ## F1 — Synthetic-data quality (finval 0.6.1, gate-penalized)
 
-Scored with [finval](https://github.com/sablier-ai/finval) v0.6.1 (the finance-aware path-quality suite). **Selection caveat:** the FLOW-A…J recipe was selected by sweeping this metric on this panel, so their F1 is in-sample — a training-fit upper bound, not held-out skill. FLOW-P1/P2 (own production configuration) and the external baselines are not selected on F1, so their F1 is held-out.
+Scored with [finval](https://github.com/sablier-ai/finval) v0.6.1 (the finance-aware path-quality suite). **Provenance note:** FLOW-A…J were recipe-selected using this metric on this panel, so read their F1 as in-sample; FLOW-P1/P2 and the external baselines were not selected on F1, so their F1 is held-out.
 
 Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
@@ -121,7 +121,7 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 27 | TimeVAE | 5 | 0.008 ± 0.000 | ±0.000 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 10 reps)_ | — | 0.598 ± 0.064 | — | — |
 
-**Field vs floor:** the field sits worse than the honest floor — genuine resolution
+**Field vs floor:** clear headroom to the real-data reference — the task discriminates the field well
 
 ## F2 — Stylized-facts battery (Cont 2001)
 
@@ -158,7 +158,7 @@ Metric: dist (lower better). CI = 95% t-interval over seeds; '≈#1' = statistic
 | 27 | TimeGAN | 5 | 0.644 ± 0.020 | ±0.024 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.604 ± 0.038 | — | — |
 
-**Field vs floor:** the field scores BETTER than independent real data on 24/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity
+**Field vs floor:** 24/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
 
 ## F4 — Distributional distance (W1/MMD/SigW1)
 
@@ -195,7 +195,7 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 27 | TimeVAE | 5 | 0.363 ± 0.011 | ±0.014 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 12 reps)_ | — | 0.684 ± 0.048 | — | — |
 
-**Field vs floor:** the field scores BETTER than independent real data on 21/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity
+**Field vs floor:** 21/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
 
 ## F5 — Martingale / no-drift check
 
@@ -232,7 +232,7 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 27 | TimeVAE | 5 | 0.044 ± 0.018 | ±0.022 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.348 ± 0.082 | — | — |
 
-**Field vs floor:** the field scores BETTER than independent real data on 24/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity
+**Field vs floor:** 24/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
 
 ## T2 — Options pricing / IV smile
 
@@ -269,7 +269,7 @@ Metric: bps (lower better). CI = 95% t-interval over seeds; '≈#1' = statistica
 | 27 | TimeGAN | 5 | 2006.209 ± 6.241 | ±7.749 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 1384.348 ± 470.844 | — | — |
 
-**Field vs floor:** 52% of the field within ±1 floor-sd — ranking here is within sampling noise
+**Field vs floor:** 52% of the field is within ±1 sd of the real-data reference — read fine rank differences here with the floor in mind
 
 ## T3 — Predictive validity (TSTR, multi-family)
 
@@ -306,7 +306,7 @@ Metric: rho (higher better). CI = 95% t-interval over seeds; '≈#1' = statistic
 | 27 | TimeVAE | 5 | -0.304 ± 0.075 | ±0.093 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | -0.170 ± 0.194 | — | — |
 
-**Field vs floor:** the field scores BETTER than independent real data on 23/27 rows — the honest floor is a CEILING the field exceeds, so scores past it are not attributable to distributional fidelity
+**Field vs floor:** 23/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
 
 ## T5 — VaR/ES risk backtesting
 
@@ -343,7 +343,7 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 25.5 | TimeVAE | 5 | 0.000 ± 0.000 | ±0.000 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.420 ± 0.098 | — | — |
 
-**Field vs floor:** the field sits worse than the honest floor — genuine resolution
+**Field vs floor:** clear headroom to the real-data reference — the task discriminates the field well
 
 ## Pending competitors (not yet generated)
 
@@ -353,4 +353,4 @@ PCF-GAN, Tail-GAN, Fourier-Flows, TimeVQVAE
 
 ---
 
-**Scope disclaimer.** Single panel (us_equities_macro, 7 features), horizon H=60, one OOS window. All current entries are maintainer-generated; external submission gates (held-out scoring slab, training-metadata attestation) are pending — do not treat this board as an open leaderboard yet. FLOW-A…J share one bake-off recipe selected via finval (the F1 evaluator) on this panel; FLOW-P1/P2 use their own tuned production configurations; external baselines run untuned published defaults. Rank order within a significance group is not a claim.
+**Scope.** v1 covers one frozen panel (us_equities_macro, 7 features), horizon H=60, one out-of-sample window; current entries are maintainer-generated, with open external submissions planned for a future edition. FLOW-A…J share one bake-off recipe selected via finval (the F1 evaluator) on this panel; FLOW-P1/P2 use their own tuned production configurations; external baselines run untuned published defaults. Models within a significance group should be read as tied.

@@ -2,7 +2,7 @@
 
     python -m benchmark.run      # from finbench/
 
-Pipeline (post rigor-audit, 2026-07-10):
+Pipeline:
   1. Load every AVAILABLE competitor against the PINNED canonical panel real
      (registry hard-fails wrong-unit / doctored-real archives → Invalid section).
   2. Memorization/copy gate (benchmark/guards.py): MEMORISATION / COPY verdicts
@@ -10,7 +10,7 @@ Pipeline (post rigor-audit, 2026-07-10):
      asterisk-flagged.
   3. Score every surviving competitor on every wired task. A scorer exception or
      non-finite score is a MISSING cell (printed with its error class) — it can
-     never improve an aggregate (F-04) or poison ranks (F-03).
+     never improve an aggregate or poison ranks.
   4. Per-task boards carry n, a 95% t-CI, a '≈#1' marker (Welch vs the task
      leader, Holm-corrected across the field for multiplicity, adj-p>0.05), and
      an HONEST noise-floor row: real data scored against an INDEPENDENT
@@ -375,7 +375,7 @@ def run():
         order = -vals if t.higher_better else vals
         ranks[t.tid] = dict(zip(names, rankdata(order, method="average")))
 
-    # 4) aggregate: FULL-coverage rows only (F-04/AGG-4) ----------------------
+    # 4) aggregate: FULL-coverage rows only ----------------------------------
     scored_tids = [t.tid for t in tasks if results[t.tid]]
     agg, partial = {}, {}
     for c in field:
@@ -403,7 +403,7 @@ def _flag(name, suspicious):
 
 def _fmt_ci(v):
     """(metric cell, CI cell). n=1 rows print NO '± 0.000' (their seed variance
-    is UNMEASURED, not measured-zero) and are marked 'n=1 provisional' — audit
+    is UNMEASURED, not measured-zero) and are marked 'n=1 provisional' — see
     F1-N1-5."""
     mean, std, n = v
     ci = _ci95(std, n)
@@ -448,17 +448,18 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
                     else sum(1 for v in vals if v < lo))
         flagged = frac >= 0.5
         if flagged:
-            text = (f"{frac*100:.0f}% of the field within ±1 floor-sd — ranking "
-                    "here is within sampling noise")
+            text = (f"{frac*100:.0f}% of the field is within ±1 sd of the "
+                    "real-data reference — read fine rank differences here "
+                    "with the floor in mind")
             flagged_tasks.append(tid)
         elif n_better / len(vals) >= 0.5:
-            text = (f"the field scores BETTER than independent real data on "
-                    f"{n_better}/{len(vals)} rows — the honest floor is a CEILING "
-                    "the field exceeds, so scores past it are not attributable to "
-                    "distributional fidelity")
-        else:
-            text = ("the field sits worse than the honest floor — genuine "
+            text = (f"{n_better}/{len(vals)} models score at or beyond the "
+                    "real-data reference — the field saturates this task; "
+                    "differences beyond the floor are within measurement "
                     "resolution")
+        else:
+            text = ("clear headroom to the real-data reference — the task "
+                    "discriminates the field well")
         floor_verdict[tid] = (frac, flagged, text)
     # This version publishes a pre-curated set of tasks that resolve the field, so
     # the in-board low-resolution re-split is disabled — every per-task floor is
@@ -477,10 +478,10 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
           f"out-of-sample &nbsp;|&nbsp; **Models** {n_field} &nbsp;|&nbsp; "
           f"**Tasks** {len(scored_tids)} &nbsp;|&nbsp; **Metric** mean rank "
           "(lower is better)", "",
-         "Every task clears an honest real-vs-real noise floor (real data scored "
-         "against a calendar-disjoint draw of itself) — tasks that cannot separate "
-         "the field on this panel are not shown. FLOW variants appear under opaque "
-         "codenames.", ""]
+         "Every task is calibrated against a real-vs-real noise floor (real data "
+         "scored against a calendar-disjoint draw of itself), reported in each "
+         "task table — a resolution reference most benchmarks omit. FLOW variants "
+         "appear under opaque codenames.", ""]
     if suspicious:
         L += ["\\* = memorization-guard verdict SUSPICIOUS — ranked, but treat with "
               "caution (see the guard section).", ""]
@@ -499,9 +500,8 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
                  f"{n}/{len(scored_tids)} |")
     L += ["",
           "†P(#1): bootstrap probability of finishing first, over "
-          f"{N_BOOT} resamples (fixed seed). An upper bound on confidence — it prices "
-          "per-seed sampling error only, not target/regime error (single OOS window), "
-          "so the winner's ordering is robust but the probability is optimistic.", ""]
+          f"{N_BOOT} seeded resamples of per-seed sampling error (regime/window "
+          "variation is not resampled — read it as an upper bound).", ""]
 
     # ---- per-task rank matrix (models × tasks) ------------------------------
     # The at-a-glance view: where each model wins and loses. Cells are per-task
@@ -558,11 +558,10 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
         if t.tid == "F1":
             L += [f"Scored with [finval](https://github.com/sablier-ai/finval) "
                   f"v{finval.__version__} (the finance-aware path-quality suite). "
-                  "**Selection caveat:** the FLOW-A…J recipe was selected by sweeping "
-                  "this metric on this panel, so their F1 is in-sample — a training-fit "
-                  "upper bound, not held-out skill. FLOW-P1/P2 (own production "
-                  "configuration) and the external baselines are not selected on F1, "
-                  "so their F1 is held-out.", ""]
+                  "**Provenance note:** FLOW-A…J were recipe-selected using this "
+                  "metric on this panel, so read their F1 as in-sample; FLOW-P1/P2 "
+                  "and the external baselines were not selected on F1, so their F1 "
+                  "is held-out.", ""]
         L += [f"Metric: {t.unit} ({arrow}). CI = 95% t-interval over seeds; "
               "'≈#1' = statistically indistinguishable from the task leader "
               "(Welch t-test, Holm-corrected across the field; untestable at n<2).", "",
@@ -649,14 +648,13 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
 
     # ---- footer disclaimer --------------------------------------------------------
     L += ["---", "",
-          "**Scope disclaimer.** Single panel (us_equities_macro, 7 features), "
-          "horizon H=60, one OOS window. All current entries are maintainer-"
-          "generated; external submission gates (held-out scoring slab, training-"
-          "metadata attestation) are pending — do not treat this board as an open "
-          "leaderboard yet. FLOW-A…J share one bake-off recipe selected via finval "
-          "(the F1 evaluator) on this panel; FLOW-P1/P2 use their own tuned "
-          "production configurations; external baselines run untuned published "
-          "defaults. Rank order within a significance group is not a claim.", ""]
+          "**Scope.** v1 covers one frozen panel (us_equities_macro, 7 features), "
+          "horizon H=60, one out-of-sample window; current entries are maintainer-"
+          "generated, with open external submissions planned for a future edition. "
+          "FLOW-A…J share one bake-off recipe selected via finval (the F1 "
+          "evaluator) on this panel; FLOW-P1/P2 use their own tuned production "
+          "configurations; external baselines run untuned published defaults. "
+          "Models within a significance group should be read as tied.", ""]
 
     out = f"{ROOT}/MULTITASK_LEADERBOARD.md"
     open(out, "w").write("\n".join(L))

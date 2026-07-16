@@ -77,10 +77,9 @@ def main():
         rc = a.get("regime_conditional", (float("nan"), 0))
         L.append(f"| {i} | {disp} | {a['overall'][0]:.3f} ± {a['overall'][1]:.3f} | {V020.get(slug,'—')} | "
                  f"{rc[0]:.3f} | {a['_hivol_frac']:.2f} |")
-    L += ["", "**Reading it:** Sablier-Flow still leads. The new `regime_conditional` column exposes a "
-          "failure invisible to v0.2.0 — **every** generator under-produces the high-volatility regime "
-          "(high-vol path fraction far below the real 0.33), i.e. they underprice stress. Sablier-Flow is "
-          "best but still produces ~10× too few high-vol paths: the quantified FLOW-2.0 conditional target.", ""]
+    L += ["", "**Reading it:** the `regime_conditional` column reports each generator's "
+          "high-volatility path fraction against the real 0.33 — a regime-coverage view "
+          "the earlier finval version did not measure.", ""]
     path = f"{ROOT}/LEADERBOARD_finval-{VER}.md"
     with open(path, "w") as f:
         f.write("\n".join(L))

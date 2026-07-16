@@ -4,20 +4,20 @@ A competitor is a source of archived synthetic path tensors. FLOW flavors carry
 OPAQUE codenames only — the arch mapping is private (see ../BENCHMARK_TASKS.md §4).
 Baselines keep their real published names.
 
-Ground truth is PINNED (audit F-01/F-10): every competitor on the v1 panel is
+Ground truth is PINNED: every competitor on the v1 panel is
 scored against the canonical panel real at `reference/panels/us_equities_macro/
 real_paths.npy`, whose full sha256 is asserted at load time. A per-seed
 `real*.npy` inside a competitor archive is tolerated only if it is byte-identical
 (sha256) to the canonical real — any mismatch hard-fails the competitor into a
 listed "invalid" state; it is never used as the scoring reference.
 
-Every loaded synth tensor passes a sanity gate (audit F-03 family / F-1):
+Every loaded synth tensor passes a sanity gate:
 non-finite values, per-feature variance far outside the canonical real's scale,
 or an all-positive "returns" tensor (the Diffusion-TS min-max-scaling class)
 mark the competitor INVALID with a reason. Invalid competitors are listed on the
 board in a dedicated section, never ranked.
 
-Every competitor carries a `provenance` field (audit F-4):
+Every competitor carries a `provenance` field:
   - "recipe-controlled":     FLOW-A..J — one shared bake-off recipe, selected by
                              sweeping finval (the F1 evaluator) on this panel.
                              Disclosed on the board.
@@ -33,7 +33,7 @@ from __future__ import annotations
 import os, glob, hashlib
 import numpy as np
 
-# Resolve BASE from this file, not the user's home (audit F-10): a clone
+# Resolve BASE from this file, not the user's home: a clone
 # elsewhere must find its own reference/, not silently write an empty board.
 BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reference")
 
@@ -66,8 +66,8 @@ PROVENANCE_LABELS = {
         "rows void until regenerated (see Invalid section)",
     "replay-resampling":
         "resamples/replays real training data (industry practice: historical "
-        "simulation family) — cannot generate genuinely novel scenarios; "
-        "memorization-guard flags expected",
+        "simulation family); scenarios are drawn from history rather than "
+        "generated, so memorization-guard flags are expected by construction",
 }
 
 
@@ -153,7 +153,7 @@ class Competitor:
         `real` is ALWAYS the pinned canonical panel real (v1 panel). A per-seed
         real*.npy in the archive is only tolerated if sha256-identical to the
         canonical real; otherwise the competitor is hard-failed into the
-        'invalid' state (audit F-01: a submitter must not control their own
+        'invalid' state (a submitter must not control their own
         ground truth). Each synth tensor must pass the sanity gate.
         """
         if self.invalid_reason:

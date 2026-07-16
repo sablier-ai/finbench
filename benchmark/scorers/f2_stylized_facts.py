@@ -18,7 +18,7 @@ signature of the fact (including the magnitude of the fact STATISTIC — e.g.
 the kurtosis level, the ACF decay — NOT the magnitude of the return scale
 itself). Lower = better.
 
-SCALE-BLINDNESS (audit F2-OW-5), stated up front so no reader over-reads a
+SCALE-BLINDNESS (a design property, stated up front so no reader over-reads a
 rank: F2 is scale-blind BY CONSTRUCTION. Cont's stylized facts are scale-free
 properties (autocorrelation shapes, kurtosis, clustering, asymmetry indices),
 and several fact statistics here are additionally relative or bounded
@@ -40,7 +40,7 @@ The 11 facts and how each is computed
                                               The raw finval |delta-kurtosis| per feature and a
                                               pooled two-sided Hill tail-index distance are
                                               reported in `detail` as supplementary diagnostics
-                                              (not part of the fact score). NB (audit F2-OW-3):
+                                              (not part of the fact score). NB:
                                               a RAW mean of |delta-kurtosis| across features
                                               whose real excess kurtosis spans ~1.6 (DXY) to
                                               ~28 (VIX level-diffs) is a units/scale-mixing
@@ -120,7 +120,7 @@ normalized distances of the 10 ASSESSABLE facts. Direction: LOWER = BETTER
 (0 = perfect reproduction of every fact), matching the "down" direction for
 F2 in BENCHMARK_TASKS.md.
 
-Non-finite-fact policy (audit F2-1) — two NaN cases, handled DIFFERENTLY:
+Non-finite-fact policy — two NaN cases, handled DIFFERENTLY:
   * REAL-side / panel-level non-computability (fact 10's missing volume
     series; a real-side statistic that cannot be estimated on this panel)
     -> the fact is excluded from the mean SYMMETRICALLY: the real reference
@@ -196,7 +196,7 @@ EWMA_BURNIN = 10
 TAIL_Q = 0.05
 HILL_FRAC = 0.05
 
-# Variance floor (audit F2-1): a synth feature with variance below this
+# Variance floor: a synth feature with variance below this
 # fraction of the real feature's variance is a degenerate submission slab —
 # every fact in whose scope it falls scores WORST (normalized 1.0).
 SYNTH_VAR_FLOOR_REL = 1e-6
@@ -352,7 +352,7 @@ def _mean_abs_diff(a: np.ndarray, b: np.ndarray) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Non-finite attribution helpers (audit F2-1): per-feature / per-fact distances
+# Non-finite attribution helpers: per-feature / per-fact distances
 # use the convention  None = real-side not computable (excluded symmetrically),
 # inf = synth-induced degeneracy (scores WORST), finite float = normal.
 # ---------------------------------------------------------------------------
@@ -430,7 +430,7 @@ def _battery(synth: np.ndarray, real: np.ndarray, names: list[str]) -> dict:
     price_names = [names[i] for i in price_idx]
     facts: dict[int, dict] = {}
 
-    # Degenerate synth features (variance floor, audit F2-1): every fact whose
+    # Degenerate synth features (variance floor): every fact whose
     # scope contains one scores WORST — including finval facts, whose
     # estimators can return misleading finite values on constant series
     # (e.g. ACF = 0 read as "reproduces absence of autocorrelation").
@@ -451,13 +451,13 @@ def _battery(synth: np.ndarray, real: np.ndarray, names: list[str]) -> dict:
                 "source": "finval.compute_acf_returns"}
 
     # -- Fact 2: heavy tails (RELATIVE pooled-kurtosis error, all features) ---
-    # F2-OW-3 fix: the fact is the mean over features of the RELATIVE excess-
+    # The fact is the mean over features of the RELATIVE excess-
     # kurtosis error  |k_s(f) - k_r(f)| / (1 + |k_r(f)|)  — the SAME form as
     # facts 4 and 7 of this battery. The former implementation averaged finval's
     # RAW |delta kurtosis| across features whose real excess kurtosis spans
     # ~1.6 (DXY) to ~28 (VIX level-diffs), so the single highest-kurtosis
     # feature carried ~48-94% of the fact-2 distance (a units/scale-mixing
-    # average, the same class as the T3-1 VIX bug). Normalizing per feature by
+    # average, a unit-mixing hazard). Normalizing per feature by
     # (1 + |k_r(f)|) balances the per-feature contribution shares. The raw
     # finval per-feature errors and a two-sided Hill tail-index distance are
     # retained as `detail` diagnostics only (not part of the fact score).
@@ -597,7 +597,7 @@ def _battery(synth: np.ndarray, real: np.ndarray, names: list[str]) -> dict:
     facts[11] = {"distance": _fact_from_pf(pf11), "per_feature": pf11,
                  "source": f"here (Zumbach A(l)=C(+l)-C(-l), 5d coarse window, lags {ZUMBACH_LAGS})"}
 
-    # assessable flags + normalization (audit F2-1):
+    # assessable flags + normalization:
     #   distance None -> not assessable (panel/real-side; excluded symmetrically)
     #   distance inf  -> synth-degenerate: assessable, WORST normalized score 1.0
     #   finite        -> normalized = d / (d + scale)

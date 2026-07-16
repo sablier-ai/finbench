@@ -70,16 +70,16 @@ Three families, all scored identically:
 Every row is **provenance-marked** on the board (`benchmark/registry.py`):
 
 - `recipe-controlled` — FLOW-A…J share **one** bake-off recipe, selected by
-  sweeping finval (the F1 evaluator) on this panel. Disclosed on every board;
-  treat the FLOW-vs-baseline *aggregate margin* accordingly.
+  sweeping finval (the F1 evaluator) on this panel; their F1 is therefore
+  in-sample, and this is disclosed on every board.
 - `production-reference` — FLOW-P1 / FLOW-P2 run their own tuned production
   configurations.
 - `published-defaults` — external baselines at their own untuned published
   defaults (each method's published paper / reference implementation), no
   per-panel tuning.
 - `replay-resampling` — resamples/replays real training data (the historical
-  simulation family); cannot generate genuinely novel scenarios, and
-  memorization-guard flags are expected by construction.
+  simulation family); scenarios are drawn from history rather than generated,
+  so memorization-guard flags are expected by construction.
 - `invalid-pending-regen` — rows **void**: excluded from every board and listed
   with the reason (e.g. tensors not in return space) until regenerated.
 
