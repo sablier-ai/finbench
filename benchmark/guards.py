@@ -1,22 +1,20 @@
-"""Memorization / OOS-copy guard (audit F-02, F2-3, T2-4, F3Q-2, F5-2).
+"""Memorization / OOS-copy guard.
 
 The public repo ships the exact OOS scoring tensor (``registry.CANON_REAL``),
-so a submitter can copy (or lightly warp / time-shuffle / block-bootstrap) the
-scoring reference and top every board: the audit measured F1 0.9606 for a
-time-shuffled copy vs 0.875 for the best honest entry, F2 0.335 vs 0.400,
-F3 0.819, F5 0.877, T2 258 bps vs 277. The declared memorization-audit protocol
-only measures NN distance to the TRAIN split, so it rates all of those attacks
-HEALTHY. This module is the hard gate
-the runner wires in front of ranking. The COPYING VERDICT is decided ONLY by
-the two copy-specific checks (b) and (c); check (a) is a reported DIAGNOSTIC
-that does NOT gate (see the rationale below).
+so without a gate a submitter could copy (or lightly warp / time-shuffle /
+block-bootstrap) the scoring reference and top every board — a copied
+reference outscores every honest generator on most tasks by construction.
+Train-side NN distance alone does not catch these OOS-copy strategies, so
+this module is the hard gate the runner wires in front of ranking. The
+COPYING VERDICT is decided ONLY by the two copy-specific checks (b) and (c);
+check (a) is a reported DIAGNOSTIC that does NOT gate (see the rationale
+below).
 
-(a) TRAIN-CLOSENESS DIAGNOSTIC — DISPERSION, NOT COPYING (reported, NEVER gates;
-    audit F1-GUARD-2 / MEMGUARD-1). Historically this "train-check ratio" was
-    the guard's DQ/SUSPICIOUS trigger, but it is a DISPERSION statistic
-    normalised by a regime-shift baseline, not a copying statistic, so it was
-    demoted (2026-07-15). Its construction (the memorization-audit protocol,
-    unchanged): sliding 60-day windows are built
+(a) TRAIN-CLOSENESS DIAGNOSTIC — DISPERSION, NOT COPYING (reported, NEVER
+    gates). This "train-check ratio" is a DISPERSION statistic normalised by a
+    regime-shift baseline, not a copying statistic, so it informs but does not
+    gate. Its construction (the train-boundary NN-distance protocol):
+    sliding 60-day windows are built
     from the panel's train split (``sablier_flow.demo_data`` <= 2019-12-31, same
     return construction and windowing as the reference); the mean NN distance of
     synth windows to train windows is compared with the mean NN distance of real
@@ -40,9 +38,9 @@ that does NOT gate (see the rationale below).
     regime shift penalises it and finval prices the resulting under-dispersion),
     and an absolute-band train-duplicate DQ would falsely erase legitimate
     historical-resampling baselines (Historical-Sim / Block-Bootstrap / FHS,
-    which honestly replay train history). See RESIDUAL note in the audit.
+    which honestly replay train history).
 
-(b) OOS-COPY (new; the check the declared audit is structurally blind to):
+(b) OOS-COPY (the copy-specific check train-side NN distance cannot see):
     synth windows are compared against the CANON REAL windows — the public
     scoring tensor itself — in two geometries:
       * RAW window space (catches verbatim / lightly-warped copies);
@@ -95,14 +93,14 @@ import numpy as np
 
 PANEL_NAME = "us_equities_macro_2010_2023"
 HORIZON = 60
-TRAIN_END = "2019-12-31"  # train split boundary, per the memorization-audit protocol
+TRAIN_END = "2019-12-31"  # train split boundary (protocol constant)
 FEATURE_TYPES = {
     "IWM": "price", "QQQ": "price", "SPY": "price", "TLT": "price",
     "VIX": "level", "TNX": "level", "DXY": "price",
 }
 
 # -- check (a): TRAIN-CLOSENESS DIAGNOSTIC bands (DISPERSION, not copying) -----
-# These no longer gate the verdict (audit F1-GUARD-2 / MEMGUARD-1). They map the
+# These do not gate the verdict (dispersion diagnostic). They map the
 # train-check ratio to a human-readable DISPERSION label only. Kept as constants
 # so the reported diagnostic stays comparable with historical logs.
 TRAIN_SEVERE_UNDERDISP_RATIO = 0.50  # was TRAIN_MEMORISATION_RATIO (demoted)
@@ -249,13 +247,13 @@ def _canon_stats(canon: np.ndarray) -> dict:
 
 def _train_check(synth_flat: np.ndarray) -> tuple[str, str, dict]:
     """Check (a) DIAGNOSTIC (does NOT gate): NN-distance-to-TRAIN ratio of
-    the memorization-audit protocol, reported as a DISPERSION label.
+    the train-boundary NN-distance protocol, reported as a DISPERSION label.
 
     Returns ("HEALTHY", msg, {...}) unconditionally — the copying verdict is
     owned by checks (b)+(c). The dispersion label is informational: it measures
     how tightly synth windows sit against the train manifold relative to the
     (more volatile) OOS regime, which is a QUALITY signal finval/F1/F5/tail
-    already score, NOT evidence of copying (audit F1-GUARD-2 / MEMGUARD-1)."""
+    already score, NOT evidence of copying."""
     train_w, oos_w = _train_oos_windows()
     train_flat = _flat(train_w)
     d_oos = _nn_distances(_flat(oos_w), train_flat)
@@ -366,8 +364,8 @@ def memorization_guard(name: str, loaded, canon_real) -> dict:
     v_b, msg_b, _ = _oos_copy_check(synth, canon)
     v_c, msg_c, _ = _verbatim_subseq_check(synth, canon, np.random.default_rng(0))
 
-    # Copying verdict = worst of the COPY-SPECIFIC checks only (audit
-    # F1-GUARD-2 / MEMGUARD-1). Check (a) is a dispersion diagnostic, appended to
+    # Copying verdict = worst of the COPY-SPECIFIC checks only (the
+    # dispersion rationale above). Check (a) is a diagnostic, appended to
     # the detail but never contributing to the verdict.
     verdict = max((v_b, v_c), key=_SEVERITY.__getitem__)
     detail = (f"{name}: {verdict} | {msg_a} | {msg_b} | {msg_c} | "

@@ -17,8 +17,8 @@ import numpy as np
 class ScorerError:
     """Sentinel returned by Task.score when the scorer RAISED (or produced a
     non-finite mean). Distinct from None (= task inapplicable / not wired):
-    the runner counts a ScorerError as a MISSING cell — audit F-04/AGG-4 —
-    so a crash can never improve a competitor's aggregate, and F-03's
+    the runner counts a ScorerError as a MISSING cell,
+    so a crash can never improve a competitor's aggregate, and the
     NaN-rank-poisoning path is closed before ranking."""
 
     def __init__(self, error_class, detail):
@@ -52,7 +52,7 @@ class Task:
             return ScorerError(type(e).__name__, str(e))
         if r is None:
             return None
-        if not np.isfinite(r[0]):  # F-03: non-finite mean must not reach ranking
+        if not np.isfinite(r[0]):  # non-finite mean must not reach ranking
             print(f"    [{self.tid}] {competitor.name}: SCORER ERROR "
                   f"(NonFiniteScore: mean={r[0]!r})")
             return ScorerError("NonFiniteScore", f"mean={r[0]!r}")
@@ -64,7 +64,7 @@ class Task:
 # far_tail_quantiles, hill_tail_index, coskewness, signature_distance,
 # long_memory, variogram_score) — GATE-PENALIZED.
 #
-# F1-GATE-3: finval defines a set of HARD-GATE metrics on which a "poor" verdict
+# Gate penalty: finval defines a set of HARD-GATE metrics on which a "poor" verdict
 # is UN-averageable — under finval's own semantics one poor hard gate forces
 # overall_quality="poor" regardless of how high the weighted mean is.
 # `validate_paths` publishes ONLY the weighted overall_score and applies NONE of
@@ -72,7 +72,7 @@ class Task:
 # still posts a high headline. We enforce the gates HERE so the F1 board cannot
 # rank a model that badly fails a gate above one that passes cleanly.
 #
-# Enforcement (F1-GATE-3b, 2026-07-15 — the CONTINUOUS penalty). The gate PRINCIPLE
+# Enforcement (the CONTINUOUS penalty). The gate PRINCIPLE
 # is preserved: a model that fails a hard gate cannot rank as if it passed. But the
 # original implementation applied the gate as a HARD, per-SEED cut — a full score-band
 # (1.0) subtracted from any seed that failed any computable gate. Because a metric
@@ -92,7 +92,7 @@ class Task:
 #     z = max(0, (value − acceptable) / (acceptable − excellent))     # 0 at the boundary
 #     penalty_metric = exp(−LN2 · z)                                  # 1 at the boundary
 # and the seed score is  overall_score · Πgates penalty_metric  (floored, below).
-# Properties, all verified on the field (see the F1-GATE-3b proof in the audit trail):
+# Properties, all verified on the field:
 #   • A metric INSIDE its gate contributes penalty 1 — a model that passes ALL gates is
 #     UNCHANGED (FLOW-H, FLOW-P2 identical to before, penalty ≡ 1). No cliff at the
 #     boundary: penalty is continuous there (=1), so a seed straddling the threshold no

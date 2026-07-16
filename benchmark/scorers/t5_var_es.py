@@ -25,7 +25,7 @@ Tests implemented (exact sources)
   test at T = 200 — low-power against ES OVER-estimation (the null saturates at
   Z2 = +1 when the over-fat model produces few real exceptions), so it is paired
   with the over-fatness gate below.
-- ES over-fatness gate (audit T5-ES-1): the AS-Z2 leg is blind to a tail-
+- ES over-fatness gate: the AS-Z2 leg is blind to a tail-
   SELECTIVELY over-fat ES97.5 — the FRTB headline risk number. A zero-skill
   model identical to real except with a 2-3x too-fat ES97.5 (body and 95%/99%
   VaR left calibrated) passes every AS-Z2 cell and, absent this gate, the whole
@@ -95,7 +95,7 @@ Composite score (0–1, higher = better risk model), per (synth, real) pair:
   composite = (var_score + es_score + tl_score) / 3
 score()["mean"/"std"] = mean/std of the composite across seeds (pairs).
 
-Over-dispersion demotion — scope of the claim (audit T5-ES-1). The published
+Over-dispersion demotion — scope of the claim. The published
 over-dispersion ladder (real x1.5 -> ~0.65 ... x5 -> ~0.17, monotone) holds ONLY
 for WHOLE-distribution scaling, which fattens the powered 95%/body/traffic-light
 cells and is what those numbers measure. A tail-SELECTIVE over-fattening (ES97.5
@@ -131,7 +131,7 @@ ES_LEVEL = 0.975            # Acerbi–Szekely on ES_97.5 (p_tail = 0.025)
 AS_MC_DRAWS = 1000
 PASS_P = 0.05
 
-# ES over-fatness gate (audit T5-ES-1). The AS-Z2 leg is one-sided (thin tails)
+# ES over-fatness gate. The AS-Z2 leg is one-sided (thin tails)
 # and low-power on the fat side, so a tail-selectively over-fat ES97.5 escapes
 # it. Mirror Kupiec's two-sidedness on the VaR cells: the ES cell also fails when
 # the model ES97.5 exceeds a powered upper band of the REALIZED tail loss,
@@ -230,7 +230,7 @@ def es_overfatness(real_obs: np.ndarray, es_model: float, p_tail: float,
                    rng: np.random.Generator, block: int = ES_OVERFAT_BLOCK,
                    n_boot: int = ES_OVERFAT_NBOOT, band_q: float = ES_OVERFAT_BAND_Q,
                    cushion: float = ES_OVERFAT_CUSHION) -> dict:
-    """ES-over-fatness gate (audit T5-ES-1). Circular block-bootstrap the
+    """ES-over-fatness gate. Circular block-bootstrap the
     realized ES97.5 from the real OOS observations to get a POWERED upper band of
     the tail loss the data actually supports; the model's ES97.5 is 'over-fat'
     when it exceeds `cushion` x that upper band. This mirrors Kupiec's two-

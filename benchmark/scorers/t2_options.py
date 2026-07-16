@@ -20,7 +20,7 @@ protocol EXACTLY:
      Reported in BASIS POINTS of implied vol (1 vol-pt = 100 bps, i.e.
      IV 0.20 = 2000 bps).
 
-NaN-strike policy (audit T2-3) — the strike grid is FIXED for everyone:
+NaN-strike policy — the strike grid is FIXED for everyone:
   * The scoring grid at each maturity is the set of strikes where the REAL
     smile is invertible (real-side NaN strikes are an assessability gap and
     are excluded SYMMETRICALLY — the same grid applies to every competitor;
@@ -35,29 +35,23 @@ NaN-strike policy (audit T2-3) — the strike grid is FIXED for everyone:
     of NaN (which used to poison the board ranks, F-03).
   * Penalized strike counts are reported in ``detail["nan_strikes"]``.
 
-Drift is NOT scored here — T2 is a PURE smile-SHAPE RMSE.
-  A prior revision multiplied the smile RMSE by a spurious-drift gate,
-  rmse * (1 + DRIFT_LAMBDA * excess_drift), where
-      excess_drift = mean_m max(0, |E[S_T]_synth - 1| - |E[S_T]_real - 1|)
-  is measured on the raw (pre-correction) terminal prices. That gate was
-  removed on two grounds:
+Drift is NOT scored here — T2 is a PURE smile-SHAPE RMSE, by design.
 
-  1. It charged noise. The drift allowance is the real panel's own deviation
-     from the martingale, estimated on 200 stride-1 OVERLAPPING 60d windows
-     from a single ~4-year regime (~16 independent blocks). At that effective
-     sample size the real forward's excess over 1.0 is indistinguishable from
-     zero and flips sign with the window, so the gate penalized most of the
-     honest field for out-deviating a reference that is itself noise. The smile
-     RMSE is already de-drifted (martingale-corrected) on both sides, so it
-     measures shape, not the forward — re-charging the forward double-counts
-     what F5 already scores.
+  1. The smile RMSE is already de-drifted (martingale-corrected) on both
+     sides, so it measures the SHAPE of the terminal-return distribution, not
+     the forward. Charging the forward here would double-count what F5 scores.
+     Moreover, the real forward's deviation from the martingale is not a
+     usable reference on this panel: it is estimated on 200 stride-1
+     OVERLAPPING 60d windows from a single ~4-year regime (~16 independent
+     blocks), where it is statistically indistinguishable from zero and flips
+     sign with the window.
 
-  2. It was gameable without changing the generator. excess_drift is a property
-     of the SUBMITTED 200 paths; the panel pins the path COUNT, not which 200,
-     so a submitter able to generate more than 200 paths could simply select
-     the 200 whose sample forward sits inside the allowance and pay a zero
-     charge. Closing that non-gameably needs a protocol-level committed pool,
-     out of scope for a scorer that only sees the submitted subset.
+  2. A drift term would also violate the benchmark's robustness rule that no
+     task be movable by submission choices alone: any forward statistic of the
+     SUBMITTED 200 paths can be steered by selecting WHICH 200 paths to submit
+     (the panel pins the path count, not the subset). Keeping T2 shape-only
+     removes that surface; closing it for a scored drift term would need a
+     protocol-level committed pool.
 
   So T2 measures smile SHAPE only, and drift / martingale behaviour is scored by
   F5. The measured forwards are still reported as a NON-SCORING diagnostic in
@@ -103,14 +97,13 @@ MONEYNESS = np.array([0.85, 0.90, 0.95, 1.00, 1.05, 1.10, 1.15])
 MATURITIES = [21, 42, 60]  # trading days (paths are 60d)
 VOL_TO_BPS = 1e4           # IV is a decimal vol; 1.0 vol = 100 vol-pts = 10_000 bps
 
-# Worst-case penalty IVs for synth strikes that fail to invert (audit T2-3).
+# Worst-case penalty IVs for synth strikes that fail to invert.
 IV_FLOOR = 0.0   # MC price <= intrinsic: the model's IV is effectively 0
 IV_CAP = 5.0     # MC price >= BS(sigma=5): the model's IV is beyond the bracket
 
-# The pre-correction spurious-drift GATE has been REMOVED (
-# the drift-gate review): it charged window-dependent noise and was driven to
-# a zero charge by pure path selection. T2 now scores smile SHAPE only; drift is
-# scored by F5. The measured forward is kept as a NON-SCORING diagnostic below.
+# T2 scores smile SHAPE only; drift is scored by F5 (see the module
+# docstring's design note). The measured forward is kept as a NON-SCORING
+# diagnostic below.
 
 
 # ---------------------------------------------------------------------------
@@ -135,7 +128,7 @@ def implied_vol(price, K, T):
 
 
 def penalty_iv(price, K, T):
-    """Worst-case IV for a non-invertible MC price (synth side only, T2-3).
+    """Worst-case IV for a non-invertible MC price (synth side only).
 
     price <= intrinsic  -> IV_FLOOR (under-dispersed: the model prices the
                            option at/below its intrinsic value, IV -> 0);
@@ -156,8 +149,7 @@ def model_smile(returns, maturity_days, spy_idx):
       ivs_penalized — same but non-invertible strikes carry the worst-case
                       penalty IV (IV_FLOOR / IV_CAP) instead of NaN;
       drift_dev     — |E[S_T] - 1| of the RAW (pre-correction) terminal prices.
-                      NON-SCORING diagnostic only (the drift gate was removed,
-                      the drift-gate review); reported, not charged.
+                      NON-SCORING diagnostic only; reported, not charged.
     """
     r = returns[:, :maturity_days, spy_idx]              # SPY log-returns to maturity
     ST = np.exp(r.sum(axis=1))                           # terminal price, S0=1
@@ -185,10 +177,9 @@ def score(loaded, feature_names=None) -> dict:
     Per maturity, the scoring strike grid is the real-invertible strikes
     (real-side NaN = assessability gap, excluded symmetrically for everyone);
     on that grid a synth-NaN strike scores the worst-case penalty IV, never
-    dropped (T2-3). The score is SMILE SHAPE ONLY: the spurious-drift GATE was
-    REMOVED (the drift-gate review — it charged noise and was
-    selection-gameable). The measured forward is reported NON-SCORING in
-    detail["drift_diagnostic"]; drift is scored by F5. See the module docstring.
+    dropped. The score is SMILE SHAPE ONLY (see the module docstring's design
+    note); the measured forward is reported NON-SCORING in
+    detail["drift_diagnostic"], and drift is scored by F5.
     """
     names = list(feature_names) if feature_names is not None else FEATURE_ORDER
     spy_idx = names.index("SPY")
@@ -210,7 +201,7 @@ def score(loaded, feature_names=None) -> dict:
                 per_mat[T].append(float("nan"))    # (symmetric for every competitor)
                 nan_strikes[T].append(0)
                 continue
-            # synth-NaN strikes on the grid -> worst-case penalty IV (T2-3)
+            # synth-NaN strikes on the grid -> worst-case penalty IV
             rmse = float(np.sqrt(np.mean((syn_pen[grid] - real_raw[grid]) ** 2))) * VOL_TO_BPS
             per_mat[T].append(rmse)
             nan_strikes[T].append(int((grid & ~np.isfinite(syn_raw)).sum()))
@@ -242,11 +233,10 @@ def score(loaded, feature_names=None) -> dict:
             "per_seed_rmse_bps": per_seed,          # smile RMSE = the score
             "drift_diagnostic": {                   # NON-SCORING: reported, never charged
                 "scored": False,
-                "note": ("drift statistic is NON-SCORING: an earlier drift gate was "
-                         "found to charge window-dependent noise and could be driven to a "
-                         "zero charge by path selection, so it was removed. This statistic "
-                         "does NOT enter the score and cannot move a rank; drift/martingale "
-                         "is scored by F5."),
+                "note": ("drift statistic is NON-SCORING by design: T2 measures "
+                         "smile SHAPE only (see the module docstring's design note). "
+                         "This statistic does NOT enter the score and cannot move a "
+                         "rank; drift/martingale is scored by F5."),
                 "statistic": "mean over maturities of max(0, |E[S_T_raw]-1| synth - |E[S_T_raw]-1| real)",
                 "per_seed_excess_drift": per_seed_excess_drift,
             },
@@ -282,10 +272,10 @@ if __name__ == "__main__":
               f"{pm['21d']:8.1f} {pm['42d']:8.1f} {pm['60d']:8.1f}   {ex:18.4f}")
     print("  (excess_drift is a NON-SCORING diagnostic — it does not enter 'mean' and cannot move a rank.)")
 
-    # ---- T2-DRIFT-REF control: a spurious risk-free drift is NO LONGER charged by T2 ----
-    # (it is F5's job now). The smile RMSE is drift-invariant by construction, so a copy
-    # of real + constant drift scores ~0 on T2 — the honest consequence of removing the
-    # noise/selection-gameable gate.
+    # ---- drift-invariance control: T2 does not charge a risk-free drift ----
+    # (that is F5's job). The smile RMSE is drift-invariant by construction, so a copy
+    # of real + constant drift scores ~0 on T2 — the designed behaviour of a
+    # shape-only task.
     real0 = np.asarray(next(iter(available_competitors())).load()[0][1], dtype=np.float64)
     print("\n  --- controls  ---")
     for nm, drift in [("copy + 30bps/day", 0.0030), ("copy - 30bps/day", -0.0030), ("exact copy", 0.0)]:
