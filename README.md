@@ -39,7 +39,10 @@ Sablier publishes three rows on the board: **Sablier-Flow** (currently
 shipping in the [Sablier SDK](https://pypi.org/project/sablier-flow/)),
 **Sablier-Flow-Next** (top research candidate for the next production
 release), and **Sablier-Flow-Old** (previous production model, kept for
-progression comparison). External baselines run their published defaults.
+progression comparison). Between them, Sablier takes the top spot on
+4 of the 7 tasks — overall synthetic-data quality (F1), distributional
+distance (F4), options pricing (T2), and VaR/ES risk backtesting (T5).
+External baselines run their published defaults.
 
 **Fidelity** — does the synth reproduce the real panel's distribution?
 

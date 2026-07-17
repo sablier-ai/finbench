@@ -48,36 +48,6 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 
 **Field vs floor:** clear headroom to the real-data reference — the task discriminates the field well
 
-## F2 — Stylized-facts battery (Cont 2001)
-
-**What it measures.** Distance to the 11 canonical Cont-2001 stylized facts of asset returns (heavy tails, volatility clustering, leverage effect, gain/loss asymmetry, timescale asymmetry).
-
-Metric: dist (lower better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
-
-| Rank | Competitor | n | dist | 95% CI | vs #1 |
-|--:|--|--:|--:|--:|--|
-| 1 | ImagenTime | 5 | 0.379 ± 0.004 | ±0.005 | #1 |
-| 2 | FM-TS | 5 | 0.379 ± 0.008 | ±0.010 | ≈#1 |
-| 3 | Block-Bootstrap | 5 | 0.381 ± 0.007 | ±0.009 | ≈#1 |
-| 4 | FHS | 5 | 0.387 ± 0.004 | ±0.006 | ≈#1 |
-| 5 | Sablier-Flow-Next | 5 | 0.389 ± 0.007 | ±0.009 | ≈#1 |
-| 6 | Sablier-Flow | 3 | 0.395 ± 0.007 | ±0.017 | ≈#1 |
-| 7 | Diffusion-TS | 5 | 0.399 ± 0.010 | ±0.012 | ≈#1 |
-| 8 | KoVAE | 5 | 0.407 ± 0.005 | ±0.007 |  |
-| 9 | Sablier-Flow-Old | 5 | 0.416 ± 0.006 | ±0.008 |  |
-| 10 | DCC-t | 5 | 0.444 ± 0.011 | ±0.014 |  |
-| 11 | Historical-Sim | 5 | 0.453 ± 0.007 | ±0.009 |  |
-| 12 | t-Copula | 5 | 0.460 ± 0.003 | ±0.004 |  |
-| 13 | Gaussian-iid | 5 | 0.462 ± 0.001 | ±0.001 |  |
-| 14 | GARCH-t | 5 | 0.466 ± 0.046 | ±0.057 | ≈#1 |
-| 15 | QuantGAN | 1 | 0.491 | n=1 provisional |  |
-| 16 | TimeGAN-600 | 5 | 0.603 ± 0.045 | ±0.055 |  |
-| 17 | TimeVAE | 5 | 0.629 ± 0.011 | ±0.014 |  |
-| 18 | TimeGAN | 5 | 0.644 ± 0.020 | ±0.024 |  |
-| — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.604 ± 0.038 | — | — |
-
-**Field vs floor:** 24/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
-
 ## F4 — Distributional distance (W1/MMD/SigW1)
 
 **What it measures.** Distributional distance from the real panel through three lenses: Wasserstein-1 (marginals), RBF-MMD (joint), and signature-MMD (path shape). Shape and scale are scored separately, so a model that just shrinks variance can't game it.
@@ -107,36 +77,6 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 12 reps)_ | — | 0.684 ± 0.048 | — | — |
 
 **Field vs floor:** 21/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
-
-## F5 — Martingale / no-drift check
-
-**What it measures.** Does the synth reproduce the near-random-walk structure of real returns without manufacturing predictable patterns? Both too-predictable and too-anti-predictable synths are penalized.
-
-Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
-
-| Rank | Competitor | n | score | 95% CI | vs #1 |
-|--:|--|--:|--:|--:|--|
-| 1 | QuantGAN | 1 | 0.574 | n=1 provisional | #1 |
-| 2 | ImagenTime | 5 | 0.572 ± 0.018 | ±0.022 |  |
-| 3 | Block-Bootstrap | 5 | 0.565 ± 0.007 | ±0.008 |  |
-| 4 | FM-TS | 5 | 0.562 ± 0.007 | ±0.009 |  |
-| 5 | KoVAE | 5 | 0.551 ± 0.013 | ±0.017 |  |
-| 6 | Diffusion-TS | 5 | 0.549 ± 0.011 | ±0.013 |  |
-| 7 | Sablier-Flow-Next | 5 | 0.548 ± 0.027 | ±0.033 |  |
-| 8 | Sablier-Flow-Old | 5 | 0.540 ± 0.009 | ±0.011 |  |
-| 9 | Sablier-Flow | 3 | 0.530 ± 0.029 | ±0.073 |  |
-| 10 | DCC-t | 5 | 0.521 ± 0.018 | ±0.022 |  |
-| 11 | GARCH-t | 5 | 0.513 ± 0.008 | ±0.010 |  |
-| 12 | t-Copula | 5 | 0.494 ± 0.020 | ±0.024 |  |
-| 13 | FHS | 5 | 0.494 ± 0.011 | ±0.014 |  |
-| 14 | Historical-Sim | 5 | 0.491 ± 0.009 | ±0.011 |  |
-| 15 | Gaussian-iid | 5 | 0.489 ± 0.003 | ±0.003 |  |
-| 16 | TimeGAN-600 | 5 | 0.265 ± 0.174 | ±0.215 |  |
-| 17 | TimeGAN | 5 | 0.129 ± 0.040 | ±0.050 |  |
-| 18 | TimeVAE | 5 | 0.044 ± 0.018 | ±0.022 |  |
-| — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.348 ± 0.082 | — | — |
-
-**Field vs floor:** 24/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
 
 ## T2 — Options pricing / IV smile
 
@@ -168,36 +108,6 @@ Metric: bps (lower better). CI = 95% t-interval over seeds; '≈#1' = statistica
 
 **Field vs floor:** 52% of the field is within ±1 sd of the real-data reference — read fine rank differences here with the floor in mind
 
-## T3 — Predictive validity (TSTR, multi-family)
-
-**What it measures.** Train strategies on the synth, run them on real data, compare Sharpe rankings via Spearman ρ. The direct test of whether a synth picks winners on real markets. Structurally caps at ρ ≈ 0.55 for single-anchor generators (the panel spans many regimes, one anchor sees one).
-
-Metric: rho (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
-
-| Rank | Competitor | n | rho | 95% CI | vs #1 |
-|--:|--|--:|--:|--:|--|
-| 1 | ImagenTime | 5 | 0.631 ± 0.025 | ±0.031 | #1 |
-| 2 | Block-Bootstrap | 5 | 0.630 ± 0.031 | ±0.038 | ≈#1 |
-| 3 | Sablier-Flow-Next | 5 | 0.575 ± 0.129 | ±0.161 | ≈#1 |
-| 4 | TimeGAN-600 | 5 | 0.575 ± 0.112 | ±0.139 | ≈#1 |
-| 5 | FM-TS | 5 | 0.549 ± 0.134 | ±0.166 | ≈#1 |
-| 6 | TimeGAN | 5 | 0.539 ± 0.057 | ±0.071 | ≈#1 |
-| 7 | KoVAE | 5 | 0.508 ± 0.179 | ±0.222 | ≈#1 |
-| 8 | Sablier-Flow | 3 | 0.507 ± 0.086 | ±0.213 | ≈#1 |
-| 9 | QuantGAN | 1 | 0.458 | n=1 provisional |  |
-| 10 | t-Copula | 5 | 0.395 ± 0.273 | ±0.339 | ≈#1 |
-| 11 | Diffusion-TS | 5 | 0.385 ± 0.138 | ±0.171 | ≈#1 |
-| 12 | Gaussian-iid | 5 | 0.279 ± 0.164 | ±0.204 | ≈#1 |
-| 13 | Historical-Sim | 5 | 0.159 ± 0.118 | ±0.147 |  |
-| 14 | FHS | 5 | 0.059 ± 0.192 | ±0.239 |  |
-| 15 | Sablier-Flow-Old | 5 | 0.022 ± 0.096 | ±0.119 |  |
-| 16 | DCC-t | 5 | -0.003 ± 0.134 | ±0.167 |  |
-| 17 | GARCH-t | 5 | -0.123 ± 0.101 | ±0.126 |  |
-| 18 | TimeVAE | 5 | -0.304 ± 0.075 | ±0.093 |  |
-| — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | -0.170 ± 0.194 | — | — |
-
-**Field vs floor:** 23/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
-
 ## T5 — VaR/ES risk backtesting
 
 **What it measures.** Fit VaR / Expected-Shortfall on the synth, backtest on real. Four regulator-standard tests combined (Kupiec + Christoffersen + Acerbi-Székely + Basel traffic-light). The most basic professional risk-model check.
@@ -227,6 +137,96 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.420 ± 0.098 | — | — |
 
 **Field vs floor:** clear headroom to the real-data reference — the task discriminates the field well
+
+## F2 — Stylized-facts battery (Cont 2001)
+
+**What it measures.** Distance to the 11 canonical Cont-2001 stylized facts of asset returns (heavy tails, volatility clustering, leverage effect, gain/loss asymmetry, timescale asymmetry).
+
+Metric: dist (lower better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
+
+| Rank | Competitor | n | dist | 95% CI | vs #1 |
+|--:|--|--:|--:|--:|--|
+| 1 | ImagenTime | 5 | 0.379 ± 0.004 | ±0.005 | #1 |
+| 2 | FM-TS | 5 | 0.379 ± 0.008 | ±0.010 | ≈#1 |
+| 3 | Block-Bootstrap | 5 | 0.381 ± 0.007 | ±0.009 | ≈#1 |
+| 4 | FHS | 5 | 0.387 ± 0.004 | ±0.006 | ≈#1 |
+| 5 | Sablier-Flow-Next | 5 | 0.389 ± 0.007 | ±0.009 | ≈#1 |
+| 6 | Sablier-Flow | 3 | 0.395 ± 0.007 | ±0.017 | ≈#1 |
+| 7 | Diffusion-TS | 5 | 0.399 ± 0.010 | ±0.012 | ≈#1 |
+| 8 | KoVAE | 5 | 0.407 ± 0.005 | ±0.007 |  |
+| 9 | Sablier-Flow-Old | 5 | 0.416 ± 0.006 | ±0.008 |  |
+| 10 | DCC-t | 5 | 0.444 ± 0.011 | ±0.014 |  |
+| 11 | Historical-Sim | 5 | 0.453 ± 0.007 | ±0.009 |  |
+| 12 | t-Copula | 5 | 0.460 ± 0.003 | ±0.004 |  |
+| 13 | Gaussian-iid | 5 | 0.462 ± 0.001 | ±0.001 |  |
+| 14 | GARCH-t | 5 | 0.466 ± 0.046 | ±0.057 | ≈#1 |
+| 15 | QuantGAN | 1 | 0.491 | n=1 provisional |  |
+| 16 | TimeGAN-600 | 5 | 0.603 ± 0.045 | ±0.055 |  |
+| 17 | TimeVAE | 5 | 0.629 ± 0.011 | ±0.014 |  |
+| 18 | TimeGAN | 5 | 0.644 ± 0.020 | ±0.024 |  |
+| — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.604 ± 0.038 | — | — |
+
+**Field vs floor:** 24/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
+
+## F5 — Martingale / no-drift check
+
+**What it measures.** Does the synth reproduce the near-random-walk structure of real returns without manufacturing predictable patterns? Both too-predictable and too-anti-predictable synths are penalized.
+
+Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
+
+| Rank | Competitor | n | score | 95% CI | vs #1 |
+|--:|--|--:|--:|--:|--|
+| 1 | QuantGAN | 1 | 0.574 | n=1 provisional | #1 |
+| 2 | ImagenTime | 5 | 0.572 ± 0.018 | ±0.022 |  |
+| 3 | Block-Bootstrap | 5 | 0.565 ± 0.007 | ±0.008 |  |
+| 4 | FM-TS | 5 | 0.562 ± 0.007 | ±0.009 |  |
+| 5 | KoVAE | 5 | 0.551 ± 0.013 | ±0.017 |  |
+| 6 | Diffusion-TS | 5 | 0.549 ± 0.011 | ±0.013 |  |
+| 7 | Sablier-Flow-Next | 5 | 0.548 ± 0.027 | ±0.033 |  |
+| 8 | Sablier-Flow-Old | 5 | 0.540 ± 0.009 | ±0.011 |  |
+| 9 | Sablier-Flow | 3 | 0.530 ± 0.029 | ±0.073 |  |
+| 10 | DCC-t | 5 | 0.521 ± 0.018 | ±0.022 |  |
+| 11 | GARCH-t | 5 | 0.513 ± 0.008 | ±0.010 |  |
+| 12 | t-Copula | 5 | 0.494 ± 0.020 | ±0.024 |  |
+| 13 | FHS | 5 | 0.494 ± 0.011 | ±0.014 |  |
+| 14 | Historical-Sim | 5 | 0.491 ± 0.009 | ±0.011 |  |
+| 15 | Gaussian-iid | 5 | 0.489 ± 0.003 | ±0.003 |  |
+| 16 | TimeGAN-600 | 5 | 0.265 ± 0.174 | ±0.215 |  |
+| 17 | TimeGAN | 5 | 0.129 ± 0.040 | ±0.050 |  |
+| 18 | TimeVAE | 5 | 0.044 ± 0.018 | ±0.022 |  |
+| — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.348 ± 0.082 | — | — |
+
+**Field vs floor:** 24/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
+
+## T3 — Predictive validity (TSTR, multi-family)
+
+**What it measures.** Train strategies on the synth, run them on real data, compare Sharpe rankings via Spearman ρ. The direct test of whether a synth picks winners on real markets. Structurally caps at ρ ≈ 0.55 for single-anchor generators (the panel spans many regimes, one anchor sees one).
+
+Metric: rho (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
+
+| Rank | Competitor | n | rho | 95% CI | vs #1 |
+|--:|--|--:|--:|--:|--|
+| 1 | ImagenTime | 5 | 0.631 ± 0.025 | ±0.031 | #1 |
+| 2 | Block-Bootstrap | 5 | 0.630 ± 0.031 | ±0.038 | ≈#1 |
+| 3 | Sablier-Flow-Next | 5 | 0.575 ± 0.129 | ±0.161 | ≈#1 |
+| 4 | TimeGAN-600 | 5 | 0.575 ± 0.112 | ±0.139 | ≈#1 |
+| 5 | FM-TS | 5 | 0.549 ± 0.134 | ±0.166 | ≈#1 |
+| 6 | TimeGAN | 5 | 0.539 ± 0.057 | ±0.071 | ≈#1 |
+| 7 | KoVAE | 5 | 0.508 ± 0.179 | ±0.222 | ≈#1 |
+| 8 | Sablier-Flow | 3 | 0.507 ± 0.086 | ±0.213 | ≈#1 |
+| 9 | QuantGAN | 1 | 0.458 | n=1 provisional |  |
+| 10 | t-Copula | 5 | 0.395 ± 0.273 | ±0.339 | ≈#1 |
+| 11 | Diffusion-TS | 5 | 0.385 ± 0.138 | ±0.171 | ≈#1 |
+| 12 | Gaussian-iid | 5 | 0.279 ± 0.164 | ±0.204 | ≈#1 |
+| 13 | Historical-Sim | 5 | 0.159 ± 0.118 | ±0.147 |  |
+| 14 | FHS | 5 | 0.059 ± 0.192 | ±0.239 |  |
+| 15 | Sablier-Flow-Old | 5 | 0.022 ± 0.096 | ±0.119 |  |
+| 16 | DCC-t | 5 | -0.003 ± 0.134 | ±0.167 |  |
+| 17 | GARCH-t | 5 | -0.123 ± 0.101 | ±0.126 |  |
+| 18 | TimeVAE | 5 | -0.304 ± 0.075 | ±0.093 |  |
+| — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | -0.170 ± 0.194 | — | — |
+
+**Field vs floor:** 23/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
 
 ---
 
@@ -261,28 +261,28 @@ A rank-based aggregate combining all 7 tasks. Read it as a **summary**, not the 
 
 Rank of each model on every task (**1** = best in column). Detailed score tables with confidence intervals and noise floors are in the [per-task boards](#per-task-boards) above.
 
-| Model | F1 | F2 | F4 | F5 | T2 | T3 | T5 | Mean |
+| Model | F1 | F4 | T2 | T5 | F2 | F5 | T3 | Mean |
 |--|:--:|:--:|:--:|:--:|:--:|:--:|:--:|--:|
-| ImagenTime | 3 | **1** | 2 | 2 | 4 | **1** | 3 | 2.29 |
-| Sablier-Flow-Next | **1** | 5 | **1** | 7 | 2 | 3 | 2 | 3.00 |
-| Block-Bootstrap | 4 | 3 | 4 | 3 | 7 | 2 | 4 | 3.86 |
-| Sablier-Flow | 2 | 6 | 3 | 9 | **1** | 8 | **1** | 4.29 |
-| t-Copula | 5 | 12 | 6 | 12 | 6 | 10 | 6 | 8.14 |
-| Historical-Sim | 6 | 11 | 5 | 14 | 3 | 13 | 5 | 8.14 |
-| FM-TS | 13 | 2 | 10 | 4 | 13 | 5 | 11 | 8.29 |
-| Gaussian-iid | 7 | 13 | 8 | 15 | 5 | 12 | 8 | 9.71 |
-| Sablier-Flow-Old | 8 | 9 | 11 | 8 | 11 | 15 | 7 | 9.86 |
-| FHS | 9 | 4 | 7 | 13 | 10 | 14 | 13 | 10.00 |
-| QuantGAN | 11 | 15 | 13 | **1** | 12 | 9 | 9 | 10.00 |
-| Diffusion-TS | 14 | 7 | 14 | 6 | 14 | 11 | 10 | 10.86 |
-| DCC-t | 10 | 10 | 9 | 10 | 9 | 16 | 15 | 11.29 |
-| KoVAE | 15 | 8 | 15 | 5 | 15 | 7 | 16 | 11.57 |
-| GARCH-t | 12 | 14 | 12 | 11 | 8 | 17 | 14 | 12.57 |
-| TimeGAN-600 | 16 | 16 | 16 | 16 | 16 | 4 | 12 | 13.71 |
-| TimeGAN | 17 | 18 | 17 | 17 | 18 | 6 | 17 | 15.71 |
-| TimeVAE | 18 | 17 | 18 | 18 | 17 | 18 | 18 | 17.71 |
+| ImagenTime | 3 | 2 | 4 | 3 | **1** | 2 | **1** | 2.29 |
+| Sablier-Flow-Next | **1** | **1** | 2 | 2 | 5 | 7 | 3 | 3.00 |
+| Block-Bootstrap | 4 | 4 | 7 | 4 | 3 | 3 | 2 | 3.86 |
+| Sablier-Flow | 2 | 3 | **1** | **1** | 6 | 9 | 8 | 4.29 |
+| t-Copula | 5 | 6 | 6 | 6 | 12 | 12 | 10 | 8.14 |
+| Historical-Sim | 6 | 5 | 3 | 5 | 11 | 14 | 13 | 8.14 |
+| FM-TS | 13 | 10 | 13 | 11 | 2 | 4 | 5 | 8.29 |
+| Gaussian-iid | 7 | 8 | 5 | 8 | 13 | 15 | 12 | 9.71 |
+| Sablier-Flow-Old | 8 | 11 | 11 | 7 | 9 | 8 | 15 | 9.86 |
+| FHS | 9 | 7 | 10 | 13 | 4 | 13 | 14 | 10.00 |
+| QuantGAN | 11 | 13 | 12 | 9 | 15 | **1** | 9 | 10.00 |
+| Diffusion-TS | 14 | 14 | 14 | 10 | 7 | 6 | 11 | 10.86 |
+| DCC-t | 10 | 9 | 9 | 15 | 10 | 10 | 16 | 11.29 |
+| KoVAE | 15 | 15 | 15 | 16 | 8 | 5 | 7 | 11.57 |
+| GARCH-t | 12 | 12 | 8 | 14 | 14 | 11 | 17 | 12.57 |
+| TimeGAN-600 | 16 | 16 | 16 | 12 | 16 | 16 | 4 | 13.71 |
+| TimeGAN | 17 | 17 | 18 | 17 | 18 | 17 | 6 | 15.71 |
+| TimeVAE | 18 | 18 | 17 | 18 | 17 | 18 | 18 | 17.71 |
 
-Tasks: **F1** Synthetic-data quality (finval 0.6.1, gate-penalized) · **F2** Stylized-facts battery (Cont 2001) · **F4** Distributional distance (W1/MMD/SigW1) · **F5** Martingale / no-drift check · **T2** Options pricing / IV smile · **T3** Predictive validity (TSTR, multi-family) · **T5** VaR/ES risk backtesting
+Tasks: **F1** Synthetic-data quality (finval 0.6.1, gate-penalized) · **F4** Distributional distance (W1/MMD/SigW1) · **T2** Options pricing / IV smile · **T5** VaR/ES risk backtesting · **F2** Stylized-facts battery (Cont 2001) · **F5** Martingale / no-drift check · **T3** Predictive validity (TSTR, multi-family)
 
 **Provenance.** Sablier-Flow, Sablier-Flow-Next, and Sablier-Flow-Old are Sablier's three published entries (production, top research candidate, previous production). External baselines run their published defaults. Replay-resampling rows (Historical-Sim, Block-Bootstrap, FHS) resample real training data by construction; memorization-guard flags for those rows are expected.
 
