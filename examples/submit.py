@@ -14,11 +14,11 @@ Usage:
 
 Your ``synth`` array must be in NATIVE return space:
 
-    SPY / QQQ / IWM / TLT / DXY:  log-returns
+    IWM / QQQ / SPY / TLT / DXY:  log-returns
     VIX / TNX:                    first-differences
 
 Match the shape exactly: ``(200, 60, 7)``. The feature order is
-``[SPY, QQQ, IWM, TLT, VIX, TNX, DXY]``.
+``[IWM, QQQ, SPY, TLT, VIX, TNX, DXY]``.
 
 This script does NOT require your model code. It only consumes the
 synthetic-output numpy file.
@@ -47,42 +47,18 @@ OOS_SPLIT_DATE = "2020-01-01"
 
 
 def load_real_reference() -> np.ndarray:
-    """Build the FinBench v1 real reference: 200 sliding windows from
-    the OOS slice of the panel.
+    """Load the pinned canonical FinBench v1 real reference.
 
-    Requires ``pip install sablier-flow`` for the panel data.
+    The v1 panel real lives at ``reference/panels/us_equities_macro/real_paths.npy``
+    and is sha256-verified by the runner. Loading the file directly (rather than
+    rebuilding it from ``sablier_flow.demo_data`` + random subsampling) guarantees
+    every scored submission uses the SAME ground truth — a submitter can never
+    supply their own.
     """
-    import pandas as pd
-    import sablier_flow
-
-    df = sablier_flow.demo_data(PANEL_NAME)
-    df.index = pd.to_datetime(df.index)
-    oos = df.loc[df.index >= OOS_SPLIT_DATE].copy()
-
-    # Per-feature transform to native return space.
-    cols = list(df.columns)
-    assert cols == FEATURE_ORDER, (
-        f"panel column order mismatch: got {cols} expected {FEATURE_ORDER}"
-    )
-    returns = pd.DataFrame(index=oos.index, columns=cols, dtype=np.float32)
-    for c in cols:
-        dt = FEATURE_TYPES[c]
-        if dt == "price":
-            returns[c] = np.log(oos[c]).diff()
-        else:
-            returns[c] = oos[c].diff()
-    returns = returns.dropna().astype(np.float32)
-
-    arr = returns.values
-    T = arr.shape[0]
-    n_windows = T - HORIZON + 1
-    windows = np.stack([arr[i : i + HORIZON] for i in range(n_windows)], axis=0)
-    if windows.shape[0] > N_PATHS:
-        rng = np.random.default_rng(0)
-        idx = rng.choice(windows.shape[0], size=N_PATHS, replace=False)
-        idx.sort()
-        windows = windows[idx]
-    return windows.astype(np.float32)
+    canon = Path(__file__).resolve().parent.parent / "reference" / "panels" / "us_equities_macro" / "real_paths.npy"
+    if not canon.exists():
+        raise FileNotFoundError(f"canonical panel real missing: {canon}")
+    return np.load(canon).astype(np.float32)
 
 
 def score_submission(synth: np.ndarray, real: np.ndarray) -> dict:
@@ -145,7 +121,9 @@ def main() -> None:
     seed_dir = args.out_dir / args.name / f"seed_{args.seed}"
     seed_dir.mkdir(parents=True, exist_ok=True)
     np.save(seed_dir / "synth_paths.npy", synth)
-    np.save(seed_dir / "real_paths.npy", real)
+    # NO per-seed real_paths.npy — the runner uses the pinned canonical panel real,
+    # sha256-verified. Duplicating it per seed would let a submitter smuggle in
+    # their own ground truth.
     (seed_dir / "meta.json").write_text(json.dumps({
         "method": args.name, "seed": args.seed,
         "paper": args.paper, "code": args.code,

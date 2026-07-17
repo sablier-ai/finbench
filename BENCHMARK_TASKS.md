@@ -53,11 +53,13 @@ and the board must not be published.
 
 Three families, all scored identically:
 
-- **FLOW entries** — the FLOW *flavors*, published under **opaque codenames**
-  (`FLOW-A`, `FLOW-B`, …; the public repo never names an architecture, see §4),
-  plus the two production references **FLOW-P1** and **FLOW-P2**.
+- **Sablier-Flow rows** — three entries under transparent labels:
+  - **Sablier-Flow** — currently shipping in the [Sablier SDK](https://pypi.org/project/sablier-flow/).
+  - **Sablier-Flow-Next** — top research candidate for the next production release.
+  - **Sablier-Flow-Old** — previous production model, kept for progression comparison.
 - **External neural baselines** — KoVAE, Diffusion-TS, TimeVAE, TimeGAN,
-  QuantGAN, and others. Published under their real names.
+  QuantGAN, ImagenTime, FM-TS. Published under their real names, at their
+  authors' published defaults.
 - **Classical & replay methods** — whatever a practitioner would actually use
   *instead of* a deep generator competes on the boards for the tasks it's used
   for: GARCH-t, DCC-t, Gaussian-iid, t-Copula (parametric), and the replay family
@@ -69,19 +71,15 @@ Three families, all scored identically:
 
 Every row is **provenance-marked** on the board (`benchmark/registry.py`):
 
-- `recipe-controlled` — FLOW-A…J share **one** bake-off recipe, selected by
-  sweeping finval (the F1 evaluator) on this panel; their F1 is therefore
-  in-sample, and this is disclosed on every board.
-- `production-reference` — FLOW-P1 / FLOW-P2 run their own tuned production
-  configurations.
+- `production` — Sablier-Flow, currently shipping in the SDK.
+- `research` — Sablier-Flow-Next, top research candidate for the next production
+  version.
+- `production-legacy` — Sablier-Flow-Old, previous production model.
 - `published-defaults` — external baselines at their own untuned published
-  defaults (each method's published paper / reference implementation), no
-  per-panel tuning.
+  defaults, no per-panel tuning.
 - `replay-resampling` — resamples/replays real training data (the historical
   simulation family); scenarios are drawn from history rather than generated,
   so memorization-guard flags are expected by construction.
-- `invalid-pending-regen` — rows **void**: excluded from every board and listed
-  with the reason (e.g. tensors not in return space) until regenerated.
 
 Every competitor is generated once per panel under the frozen protocol
 (`BENCHMARK.md` §1–2) and archived to `reference/<competitor>/`. All competitors
@@ -104,21 +102,7 @@ byte-identical — a submitter never supplies their own ground truth.
   rank. Aggregate ranks are tie-aware (`1=` for exact ties) with an approximate
   bootstrap P(#1) column; coverage is reported (no silent gaps).
 
-## 4. Architecture obfuscation (public-repo policy)
-
-The FLOW architectures are proprietary. On the **public FinBench repo**:
-
-- FLOW flavors appear **only** under codenames (`FLOW-A`, `FLOW-B`, …). No file,
-  table, tensor path, or metadata in this repo may contain an internal
-  architecture or variant name of any kind.
-- The codename ↔ architecture map lives **only in the private paper repo** and is
-  never committed here.
-- Baselines keep their real published names (they are public work).
-
-This lets the public benchmark show FLOW's strength — several flavors competing
-across the boards — without disclosing what makes them work.
-
-## 5. Fairness contract
+## 4. Fairness contract
 
 For a result to enter a board, it must satisfy:
 

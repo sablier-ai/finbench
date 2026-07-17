@@ -65,24 +65,15 @@ canonical real. Its rho is exposed in every ``score()`` detail as
 ``null_ar1_rho`` and printed as a permanent board row by ``__main__``. If the
 null ever climbs back near the top, the family has re-collapsed.
 
-Honesty caveat — why FLOW scores LOW here, and how much is task vs model
------------------------------------------------------------------------
-T3 is train-on-synth / test-on-real, and the real target is 200 rolling 60-day
-windows spanning many 2020-2023 regimes, while FLOW generates all its paths from
-ONE anchor state. A single-anchor generator therefore reproduces ONE regime's
-strategy ranking, not the multi-regime average — a conditioning mismatch that
-caps its attainable rho regardless of generation quality. ``diagnostics()``
-quantifies this:
-
-  * multi-regime perfect ceiling (resample all real windows): rho ~ 0.95
-  * single-anchor ceiling (a PERFECT generator locked to one 60-day regime):
-    rho ~ 0.34-0.74 (mean ~0.55) — the best ANY single-anchor generator can do.
-
-FLOW's stronger flavors land AT the top of the single-anchor band, so most of
-their gap to 0.95 is the task property, not a FLOW defect. FLOW flavors that
-fall BELOW the single-anchor floor (~0.34) are showing genuine model weakness on
-joint strategy-rank transfer. Both are reported straight; T3 is not tuned to
-flatter FLOW.
+Ceilings and floors
+-------------------
+The real target is 200 rolling 60-day windows spanning many 2020-2023 regimes.
+A model conditioned on a single anchor date can only reproduce one regime's
+strategy ranking, capping its attainable rho below the multi-regime perfect
+ceiling. ``diagnostics()`` reports both a multi-regime perfect ceiling
+(resample all real windows, rho ~ 0.95) and a single-anchor ceiling estimated
+from a perfect generator locked to one 60-day regime, so a reader can tell
+whether a low rho is a task property or a model defect.
 
 Estimator / contract
 --------------------
@@ -577,9 +568,9 @@ def diagnostics(real, cost=COST):
     * multi_regime_ceiling: 200 windows resampled from ALL real regimes — what a
       PERFECT multi-anchor generator scores.
     * single_anchor_ceiling: each of several contiguous ~one-regime sub-blocks of
-      the (start-sorted) real windows scored vs the full target — the BEST any
-      single-anchor generator (e.g. FLOW, one anchor state) can do. The gap
-      multi_regime - single_anchor is the anchor-mismatch TASK PENALTY.
+      the (start-sorted) real windows scored vs the full target — the BEST a
+      single-anchor generator can do. The gap multi_regime - single_anchor is
+      the anchor-mismatch TASK PENALTY.
     * ar1_null / shuffled_real: known-bad controls that must rank below real
       generators.
     """
@@ -696,7 +687,7 @@ def _board():
           f"+- {diag['multi_regime_ceiling_std']:.3f}  (perfect multi-anchor generator)")
     print(f"  single-anchor ceiling              = {diag['single_anchor_ceiling_mean']:+.3f} "
           f"[{diag['single_anchor_ceiling_min']:+.3f}, {diag['single_anchor_ceiling_max']:+.3f}]  "
-          f"(BEST a one-anchor generator, e.g. FLOW, can reach)")
+          f"(BEST a single-anchor generator can reach)")
     print(f"  anchor-mismatch task penalty       = {diag['anchor_mismatch_penalty']:.3f}  "
           f"(multi-regime minus single-anchor)")
     print(f"  AR(1) null / shuffled-real control = {diag['ar1_null_rho']:+.3f} / "
@@ -704,11 +695,11 @@ def _board():
     print(f"\n{'rank':>4} {'tier':>4}  {'competitor':22s} {'rho':>7} {'CI95(tgt+synth)':>18}")
     for i, (name, kind, rho, draws) in enumerate(rows, 1):
         lo, hi = np.nanpercentile(draws, [2.5, 97.5])
-        tag = "  <== CONTROL" if kind == "control" else ("  (flow)" if name.startswith("FLOW") else "")
+        tag = "  <== CONTROL" if kind == "control" else ""
         print(f"{i:>4} {tiers[i-1]:>4}  {name:22s} {rho:+7.3f} [{lo:+.2f},{hi:+.2f}]{tag}")
 
     nrk = next(i for i, r in enumerate(rows, 1) if r[0].startswith("AR1-NULL"))
-    print(f"\nAR(1) null rank: #{nrk} of {len(rows)} (was #2 under the collapsed v2 family). "
+    print(f"\nAR(1) null rank: #{nrk} of {len(rows)}. "
           f"Rows within a shared tier are a statistical tie (flip-prob > 0.10).")
 
 

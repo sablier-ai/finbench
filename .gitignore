@@ -17,7 +17,7 @@ venv/
 local/
 scratch/
 
-# agent-local / internal tooling — NEVER commit (contain the forbidden-token guard list)
+# Local dev files
 CLAUDE.local.md
 *.local.md
 .claude/
