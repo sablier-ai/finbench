@@ -90,8 +90,8 @@ Because every scored statistic is affine-invariant, F5 is PROVABLY IMMUNE to
 variance manipulation in BOTH directions: multiplying a return column by any k,
 or applying a mean-preserving spread by any k, leaves all four subscores EXACTLY
 unchanged. (Verified: the real x k and honest-generator x k F5 ladders are flat
-for both inflation and deflation; the FLOW-A / DCC-t inflation vault above is
-CLOSED, and the original deflate exploit stays closed.)
+for both inflation and deflation; inflation-based and deflation-based exploits
+against the scoring function are both closed.)
 
 Non-finite subscore policy — the two NaN cases are DISTINCT:
   * REAL-side statistic non-finite -> the component is not assessable on this

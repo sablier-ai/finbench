@@ -50,7 +50,7 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 
 ## F4 — Distributional distance (W1/MMD/SigW1)
 
-**What it measures.** Distributional distance from the real panel through three lenses: Wasserstein-1 (marginals), RBF-MMD (joint), and signature-MMD (path shape). Shape and scale are scored separately, so a model that just shrinks variance can't game it.
+**What it measures.** How close the synth distribution is to real across three lenses: each asset's distribution (Wasserstein-1), the joint distribution across assets (MMD), and the shape of the paths through time (signature-MMD). Shape and scale are scored separately so a model that just shrinks variance can't game it.
 
 Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
@@ -76,7 +76,7 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 18 | TimeVAE | 5 | 0.363 ± 0.011 | ±0.014 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 12 reps)_ | — | 0.684 ± 0.048 | — | — |
 
-**Field vs floor:** 21/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
+**Field vs floor:** most of the field scores at or beyond the real-data reference; the task saturates on this panel, so differences beyond the floor are within measurement resolution
 
 ## T2 — Options pricing / IV smile
 
@@ -106,7 +106,7 @@ Metric: bps (lower better). CI = 95% t-interval over seeds; '≈#1' = statistica
 | 18 | TimeGAN | 5 | 2006.209 ± 6.241 | ±7.749 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 1384.348 ± 470.844 | — | — |
 
-**Field vs floor:** 52% of the field is within ±1 sd of the real-data reference — read fine rank differences here with the floor in mind
+**Field vs floor:** roughly half the field is within ±1 sd of the real-data reference — read fine rank differences here with the floor in mind
 
 ## T5 — VaR/ES risk backtesting
 
@@ -166,7 +166,7 @@ Metric: dist (lower better). CI = 95% t-interval over seeds; '≈#1' = statistic
 | 18 | TimeGAN | 5 | 0.644 ± 0.020 | ±0.024 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.604 ± 0.038 | — | — |
 
-**Field vs floor:** 24/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
+**Field vs floor:** most of the field scores at or beyond the real-data reference; the task saturates on this panel, so differences beyond the floor are within measurement resolution
 
 ## F5 — Martingale / no-drift check
 
@@ -196,11 +196,11 @@ Metric: score (higher better). CI = 95% t-interval over seeds; '≈#1' = statist
 | 18 | TimeVAE | 5 | 0.044 ± 0.018 | ±0.022 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | 0.348 ± 0.082 | — | — |
 
-**Field vs floor:** 24/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
+**Field vs floor:** most of the field scores at or beyond the real-data reference; the task saturates on this panel, so differences beyond the floor are within measurement resolution
 
 ## T3 — Predictive validity (TSTR, multi-family)
 
-**What it measures.** Train strategies on the synth, run them on real data, compare Sharpe rankings via Spearman ρ. The direct test of whether a synth picks winners on real markets. Structurally caps at ρ ≈ 0.55 for single-anchor generators (the panel spans many regimes, one anchor sees one).
+**What it measures.** Train strategies on the synth, run them on real data, compare Sharpe rankings via Spearman ρ. The direct test of whether a synth picks winners on real markets. The real target spans many 2020-2023 regimes; a generator that reproduces only one regime is structurally capped below the multi-regime ceiling — the T3 diagnostic reports a regime-locked reference (~0.55) alongside the perfect multi-regime ceiling (~0.95) so a reader can tell whether a low rho is a task property or a model defect.
 
 Metric: rho (higher better). CI = 95% t-interval over seeds; '≈#1' = statistically indistinguishable from the task leader (Welch t-test, Holm-corrected across the field; untestable at n<2).
 
@@ -226,7 +226,7 @@ Metric: rho (higher better). CI = 95% t-interval over seeds; '≈#1' = statistic
 | 18 | TimeVAE | 5 | -0.304 ± 0.075 | ±0.093 |  |
 | — | _**noise floor** — independent real-vs-real (calendar-disjoint windows, competitor path budget, 11 reps)_ | — | -0.170 ± 0.194 | — | — |
 
-**Field vs floor:** 23/27 models score at or beyond the real-data reference — the field saturates this task; differences beyond the floor are within measurement resolution
+**Field vs floor:** most of the field scores at or beyond the real-data reference; the task saturates on this panel, so differences beyond the floor are within measurement resolution
 
 ---
 

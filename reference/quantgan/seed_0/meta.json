@@ -1,0 +1,16 @@
+{
+  "method": "QuantGAN",
+  "seed": 0,
+  "horizon": 60,
+  "n_paths": 200,
+  "feature_order": [
+    "IWM",
+    "QQQ",
+    "SPY",
+    "TLT",
+    "VIX",
+    "TNX",
+    "DXY"
+  ],
+  "panel": "us_equities_macro_2010_2023"
+}

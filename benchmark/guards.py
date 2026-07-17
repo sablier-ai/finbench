@@ -381,7 +381,7 @@ if __name__ == "__main__":
     for comp in available_competitors():
         try:
             loaded = comp.load()
-        except Exception as e:  # e.g. registry tensor-sanity gate (F-1)
+        except Exception as e:  # e.g. registry tensor-sanity gate
             print(f"  {comp.name:18s} {'N/A':12s} not auditable: "
                   f"{type(e).__name__}: {e}")
             continue

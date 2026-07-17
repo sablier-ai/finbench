@@ -128,7 +128,7 @@ def _sanity_reason(synth: np.ndarray, canon: np.ndarray) -> str | None:
 class Competitor:
     def __init__(self, name, family, seed_glob, *, provenance="published-defaults",
                  note="", invalid_reason=None):
-        self.name = name                 # PUBLIC label (codename for FLOW flavors)
+        self.name = name                 # public label used on the leaderboard
         self.family = family             # "flow" | "neural" | "classical"
         self.seed_glob = seed_glob       # glob of seed dirs OR None if not yet generated
         self.provenance = provenance     # see PROVENANCE_LABELS
@@ -234,7 +234,3 @@ COMPETITORS = _SABLIER_FLOW + _BASELINES
 
 def available_competitors():
     return [c for c in COMPETITORS if c.available]
-
-
-def pending_competitors():
-    return [c for c in COMPETITORS if not c.available]

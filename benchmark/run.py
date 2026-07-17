@@ -32,7 +32,7 @@ import numpy as np
 from scipy.stats import rankdata
 from scipy import stats as sps
 
-from benchmark.registry import (available_competitors, pending_competitors,
+from benchmark.registry import (available_competitors,
                                 load_canon_real, InvalidCompetitorError,
                                 PROVENANCE_LABELS)
 from benchmark.tasks import TASKS, ScorerError
@@ -403,8 +403,7 @@ def _flag(name, suspicious):
 
 def _fmt_ci(v):
     """(metric cell, CI cell). n=1 rows print NO '± 0.000' (their seed variance
-    is UNMEASURED, not measured-zero) and are marked 'n=1 provisional' — see
-    F1-N1-5."""
+    is UNMEASURED, not measured-zero) and are marked 'n=1 provisional'."""
     mean, std, n = v
     ci = _ci95(std, n)
     if ci is None:                       # n < 2: seed variance unmeasured
@@ -480,8 +479,7 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
           "(lower is better)", "",
          "Every task is calibrated against a real-vs-real noise floor (real data "
          "scored against a calendar-disjoint draw of itself), reported in each "
-         "task table — a resolution reference most benchmarks omit. FLOW variants "
-         "appear under opaque codenames.", ""]
+         "task table — a resolution reference most benchmarks omit.", ""]
     if suspicious:
         L += ["\\* = memorization-guard verdict SUSPICIOUS — ranked, but treat with "
               "caution (see the guard section).", ""]
@@ -557,11 +555,7 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
         arrow = "higher better" if t.higher_better else "lower better"
         if t.tid == "F1":
             L += [f"Scored with [finval](https://github.com/sablier-ai/finval) "
-                  f"v{finval.__version__} (the finance-aware path-quality suite). "
-                  "**Provenance note:** FLOW-A…J were recipe-selected using this "
-                  "metric on this panel, so read their F1 as in-sample; FLOW-P1/P2 "
-                  "and the external baselines were not selected on F1, so their F1 "
-                  "is held-out.", ""]
+                  f"v{finval.__version__} (the finance-aware path-quality suite).", ""]
         L += [f"Metric: {t.unit} ({arrow}). CI = 95% t-interval over seeds; "
               "'≈#1' = statistically indistinguishable from the task leader "
               "(Welch t-test, Holm-corrected across the field; untestable at n<2).", "",
@@ -638,22 +632,12 @@ def _write(results, errors, ranks, agg, partial, scored_tids, comps, tasks,
             L.append(f"| {c.name} | {prov.get(c.name, '?')} | {reason} |")
         L.append("")
 
-    # ---- coverage / pending -----------------------------------------------------
-    pend = pending_competitors()
-    if pend:
-        L += ["## Pending competitors (not yet generated)", "",
-              "These slot into every board as new rows once their tensors exist "
-              "(FLOW flavors are GPU-gated):", "",
-              ", ".join(c.name for c in pend), ""]
-
     # ---- footer disclaimer --------------------------------------------------------
     L += ["---", "",
-          "**Scope.** v1 covers one frozen panel (us_equities_macro, 7 features), "
-          "horizon H=60, one out-of-sample window; current entries are maintainer-"
-          "generated, with open external submissions planned for a future edition. "
-          "FLOW-A…J share one bake-off recipe selected via finval (the F1 "
-          "evaluator) on this panel; FLOW-P1/P2 use their own tuned production "
-          "configurations; external baselines run untuned published defaults. "
+          "**Scope.** v1 covers one frozen panel (`us_equities_macro`, 7 features), "
+          "horizon H=60, one out-of-sample window. Current entries are maintainer-"
+          "generated; open external submissions are planned for a future edition. "
+          "External baselines run their authors' published defaults, unmodified. "
           "Models within a significance group should be read as tied.", ""]
 
     out = f"{ROOT}/MULTITASK_LEADERBOARD.md"

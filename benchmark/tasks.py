@@ -36,7 +36,7 @@ class Task:
         self.unit = unit
         self.higher_better = higher_better
         self._scorer = scorer
-        self.note = note   # optional board annotation (e.g. T4's regen-pending status)
+        self.note = note   # optional board annotation
 
     def score(self, competitor):
         """Return (mean, std, n), None (task inapplicable — a legitimate
@@ -94,7 +94,7 @@ class Task:
 # and the seed score is  overall_score · Πgates penalty_metric  (floored, below).
 # Properties, all verified on the field:
 #   • A metric INSIDE its gate contributes penalty 1 — a model that passes ALL gates is
-#     UNCHANGED (FLOW-H, FLOW-P2 identical to before, penalty ≡ 1). No cliff at the
+#     UNCHANGED (penalty ≡ 1). No cliff at the
 #     boundary: penalty is continuous there (=1), so a seed straddling the threshold no
 #     longer swings by 1.0 — the ±0.5 seed stds collapse to genuine generation variance.
 #   • MONOTONE + graded: worse violation → strictly larger demotion. LN2 calibrates it so
@@ -225,15 +225,14 @@ def _score_finval(competitor):
 
 def _wrap(module_name):
     """Adapt a scorers/<module>.score(loaded) -> {"mean","std","n",...} to the
-    Task scorer contract (competitor) -> (mean, std, n). Lazy import so one
-    broken scorer doesn't take down the runner."""
+    Task scorer contract (competitor) -> (mean, std, n). Lazy imports isolate
+    scorer failures from the rest of the run."""
     def scorer(competitor):
         import importlib
         mod = importlib.import_module(f"benchmark.scorers.{module_name}")
         r = mod.score(competitor.load())
-        if int(r["n"]) == 0:      # no scorable seed => clean coverage gap, not a
-            return None           # scorer error (T4's single-anchor archives; a
-                                  # T6/T7 competitor whose every seed diverged)
+        if int(r["n"]) == 0:      # no scorable seed => clean coverage gap
+            return None
         return (float(r["mean"]), float(r["std"]), int(r["n"]))
     return scorer
 

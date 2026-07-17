@@ -18,7 +18,4 @@ local/
 scratch/
 
 # Local dev files
-CLAUDE.local.md
 *.local.md
-.claude/
-.wf_*.js

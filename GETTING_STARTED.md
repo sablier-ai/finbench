@@ -63,7 +63,6 @@ This writes:
 ```
 reference/your_method/seed_0/
     synth_paths.npy
-    real_paths.npy
     meta.json
     finval_scores.json
 ```

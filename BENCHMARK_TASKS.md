@@ -4,10 +4,9 @@ FinBench is a **suite of independent tasks**, each a fair competition under
 identical conditions, with a **per-task leaderboard** and a **rank-based
 aggregate**.
 
-Fix the task, fix the data, fix the protocol, then let *every* model — every
-FLOW flavor and every external baseline — compete under exactly the same
-conditions. No model gets a private advantage; the only thing that varies is the
-model.
+Fix the task, fix the data, fix the protocol, then let *every* model compete
+under exactly the same conditions. No model gets a private advantage; the
+only thing that varies is the model.
 
 ## 1. Tasks
 
@@ -58,8 +57,9 @@ Three families, all scored identically:
   - **Sablier-Flow-Next** — top research candidate for the next production release.
   - **Sablier-Flow-Old** — previous production model, kept for progression comparison.
 - **External neural baselines** — KoVAE, Diffusion-TS, TimeVAE, TimeGAN,
-  QuantGAN, ImagenTime, FM-TS. Published under their real names, at their
-  authors' published defaults.
+  TimeGAN-600 (a longer-training robustness check on TimeGAN), QuantGAN,
+  ImagenTime, FM-TS. Published under their real names, at their authors'
+  published defaults.
 - **Classical & replay methods** — whatever a practitioner would actually use
   *instead of* a deep generator competes on the boards for the tasks it's used
   for: GARCH-t, DCC-t, Gaussian-iid, t-Copula (parametric), and the replay family

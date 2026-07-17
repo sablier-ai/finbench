@@ -68,10 +68,10 @@ null ever climbs back near the top, the family has re-collapsed.
 Ceilings and floors
 -------------------
 The real target is 200 rolling 60-day windows spanning many 2020-2023 regimes.
-A model conditioned on a single anchor date can only reproduce one regime's
+A model conditioned on a single regime can only reproduce one regime's
 strategy ranking, capping its attainable rho below the multi-regime perfect
 ceiling. ``diagnostics()`` reports both a multi-regime perfect ceiling
-(resample all real windows, rho ~ 0.95) and a single-anchor ceiling estimated
+(resample all real windows, rho ~ 0.95) and a regime-locked ceiling estimated
 from a perfect generator locked to one 60-day regime, so a reader can tell
 whether a low rho is a task property or a model defect.
 
@@ -567,10 +567,10 @@ def diagnostics(real, cost=COST):
       NOT an attainable target.
     * multi_regime_ceiling: 200 windows resampled from ALL real regimes — what a
       PERFECT multi-anchor generator scores.
-    * single_anchor_ceiling: each of several contiguous ~one-regime sub-blocks of
+    * regime_locked_ceiling: each of several contiguous ~one-regime sub-blocks of
       the (start-sorted) real windows scored vs the full target — the BEST a
-      single-anchor generator can do. The gap multi_regime - single_anchor is
-      the anchor-mismatch TASK PENALTY.
+      single-regime generator can do. The gap multi_regime - regime_locked is
+      the regime-coverage TASK PENALTY.
     * ar1_null / shuffled_real: known-bad controls that must rank below real
       generators.
     """
@@ -604,10 +604,10 @@ def diagnostics(real, cost=COST):
         "self_consistency_even_odd": self_consistency,
         "multi_regime_ceiling_mean": float(np.mean(mr)),
         "multi_regime_ceiling_std": float(np.std(mr)),
-        "single_anchor_ceiling_mean": float(np.mean(sa)),
-        "single_anchor_ceiling_max": float(np.max(sa)),
-        "single_anchor_ceiling_min": float(np.min(sa)),
-        "anchor_mismatch_penalty": float(np.mean(mr) - np.mean(sa)),
+        "regime_locked_ceiling_mean": float(np.mean(sa)),
+        "regime_locked_ceiling_max": float(np.max(sa)),
+        "regime_locked_ceiling_min": float(np.min(sa)),
+        "regime_coverage_penalty": float(np.mean(mr) - np.mean(sa)),
         "ar1_null_rho": null["mean"],
         "shuffled_real_rho": float(np.mean(sh)),
     }
@@ -685,11 +685,11 @@ def _board():
           f"(MEMORIZATION reference, not attainable)")
     print(f"  multi-regime PERFECT ceiling       = {diag['multi_regime_ceiling_mean']:+.3f} "
           f"+- {diag['multi_regime_ceiling_std']:.3f}  (perfect multi-anchor generator)")
-    print(f"  single-anchor ceiling              = {diag['single_anchor_ceiling_mean']:+.3f} "
-          f"[{diag['single_anchor_ceiling_min']:+.3f}, {diag['single_anchor_ceiling_max']:+.3f}]  "
-          f"(BEST a single-anchor generator can reach)")
-    print(f"  anchor-mismatch task penalty       = {diag['anchor_mismatch_penalty']:.3f}  "
-          f"(multi-regime minus single-anchor)")
+    print(f"  regime-locked ceiling              = {diag['regime_locked_ceiling_mean']:+.3f} "
+          f"[{diag['regime_locked_ceiling_min']:+.3f}, {diag['regime_locked_ceiling_max']:+.3f}]  "
+          f"(BEST a single-regime generator can reach)")
+    print(f"  regime-coverage task penalty       = {diag['regime_coverage_penalty']:.3f}  "
+          f"(multi-regime minus single-regime)")
     print(f"  AR(1) null / shuffled-real control = {diag['ar1_null_rho']:+.3f} / "
           f"{diag['shuffled_real_rho']:+.3f}  (known-bad — must rank low)")
     print(f"\n{'rank':>4} {'tier':>4}  {'competitor':22s} {'rho':>7} {'CI95(tgt+synth)':>18}")

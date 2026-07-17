@@ -32,7 +32,7 @@ NaN-strike policy — the strike grid is FIXED for everyone:
     the per-competitor variable-denominator bug where nanmean silently
     scored under-dispersed generators on the easy ATM strikes only, and it
     maps an all-NaN synth smile to a large finite worst-case RMSE instead
-    of NaN (which used to poison the board ranks, F-03).
+    of NaN.
   * Penalized strike counts are reported in ``detail["nan_strikes"]``.
 
 Drift is NOT scored here — T2 is a PURE smile-SHAPE RMSE, by design.
@@ -290,7 +290,7 @@ if __name__ == "__main__":
     # submit cannot change any drift charge (there is none). Demonstrate: an honest 200 and a
     # 200-subset hand-picked to drive excess_drift -> 0 both score their pure smile RMSE; the
     # drift dimension confers ZERO score advantage either way.
-    c = {x.name: x for x in available_competitors()}["FLOW-A"]
+    c = {x.name: x for x in available_competitors()}["Sablier-Flow-Next"]
     pr = c.load()
     poolA = np.concatenate([np.asarray(s, dtype=np.float64) for s, _ in pr], axis=0)
     realA = np.asarray(pr[0][1], dtype=np.float64)
