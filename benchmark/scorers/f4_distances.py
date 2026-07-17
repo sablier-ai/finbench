@@ -410,9 +410,9 @@ def score(loaded, feature_names=None) -> dict:
         "mmd_bandwidth_factors": list(MMD_BW_FACTORS),
         "sig_depth": SIG_DEPTH,
         "sig_route": ("numpy Chen depth-2 signatures of the JOINT (F+1)-dim "
-                      "time-augmented path; unbiased linear-kernel two-sample MMD "
-                      "(iisignature build failed; signatory absent)"),
-        "sig_form": ("joint-path unbiased expected-signature MMD (distributional, "
+                      "time-augmented path; unbiased two-sample MMD^2 with a "
+                      "multi-bandwidth Gaussian (RBF) kernel"),
+        "sig_form": ("joint-path unbiased signature MMD (RBF, distributional, "
                      "order- and cross-asset-sensitive, real-whitened per-coord)"),
         "scale_handling": ("shape distances on OWN-std-standardized increments "
                            "(scale-invariant); dispersion via log-symmetric disp term"),

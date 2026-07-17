@@ -1,33 +1,34 @@
 """Competitor registry + path loading.
 
-A competitor is a source of archived synthetic path tensors. FLOW flavors carry
-OPAQUE codenames only — the arch mapping is private (see ../BENCHMARK_TASKS.md §4).
-Baselines keep their real published names.
+A competitor is a source of archived synthetic path tensors. Sablier-Flow rows
+are Sablier's three published entries: the current production model, the top
+research candidate, and the previous production model. External baselines keep
+their real published names.
 
-Ground truth is PINNED: every competitor on the v1 panel is
-scored against the canonical panel real at `reference/panels/us_equities_macro/
-real_paths.npy`, whose full sha256 is asserted at load time. A per-seed
-`real*.npy` inside a competitor archive is tolerated only if it is byte-identical
-(sha256) to the canonical real — any mismatch hard-fails the competitor into a
-listed "invalid" state; it is never used as the scoring reference.
+Ground truth is PINNED: every competitor on the v1 panel is scored against the
+canonical panel real at `reference/panels/us_equities_macro/real_paths.npy`,
+whose sha256 is asserted at load time. A per-seed `real*.npy` in a competitor's
+archive is tolerated only if byte-identical to the canonical real — any
+mismatch hard-fails the competitor into an "invalid" state; a submitter never
+supplies their own ground truth.
 
-Every loaded synth tensor passes a sanity gate:
-non-finite values, per-feature variance far outside the canonical real's scale,
-or an all-positive "returns" tensor (the Diffusion-TS min-max-scaling class)
-mark the competitor INVALID with a reason. Invalid competitors are listed on the
-board in a dedicated section, never ranked.
+Every loaded synth tensor passes a sanity gate: non-finite values or per-feature
+variance far outside the canonical real's scale mark the competitor INVALID
+with a reason. Invalid competitors are listed in a dedicated section, never
+ranked.
 
 Every competitor carries a `provenance` field:
-  - "recipe-controlled":     FLOW-A..J — one shared bake-off recipe, selected by
-                             sweeping finval (the F1 evaluator) on this panel.
-                             Disclosed on the board.
-  - "production-reference":  FLOW-P1 / FLOW-P2 — own tuned production configuration.
-  - "published-defaults":    external baselines at untuned published defaults.
-  - "invalid-pending-regen": rows VOID (excluded from all boards, listed with
-                             reason) until regenerated — currently Diffusion-TS,
-                             whose archived tensors are min-max [0,1], not returns.
+  - "production":         Sablier-Flow — currently shipping in the Sablier SDK.
+  - "research":           Sablier-Flow-Next — top research candidate for the
+                          next production version.
+  - "production-legacy":  Sablier-Flow-Old — previous production model, kept
+                          for reference and progression comparison.
+  - "published-defaults": external baselines at untuned published defaults.
+  - "replay-resampling":  resampling / replay methods (historical simulation
+                          family); memorization-guard flags are expected by
+                          construction.
 
-Every competitor is scored identically by every task; nothing here is task-aware.
+Every competitor is scored identically; nothing here is task-aware.
 """
 from __future__ import annotations
 import os, glob, hashlib
@@ -37,10 +38,7 @@ import numpy as np
 # elsewhere must find its own reference/, not silently write an empty board.
 BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reference")
 
-# The canonical us_equities_macro OOS real reference, moved out of any
-# competitor's archive to a panel path and pinned by full sha256
-# (data-bytes md5 509088fee22a68952b2ef6e26db987de, kept for continuity with
-# older notes; the sha256 below is authoritative and asserted at load).
+# The canonical us_equities_macro OOS real reference, pinned by full sha256.
 CANON_REAL = f"{BASE}/panels/us_equities_macro/real_paths.npy"
 CANON_REAL_SHA256 = "34f9063f5b6c61a9aae501b84e001464b31ee1abbfde5ea232e429d0e5ed5fdc"
 
@@ -56,18 +54,17 @@ _VAR_RATIO_MIN = 1.0 / 100.0
 _VAR_RATIO_MAX = 100.0
 
 PROVENANCE_LABELS = {
-    "recipe-controlled":
-        "one shared FLOW bake-off recipe, selected via finval (the F1 evaluator) on this panel",
-    "production-reference":
-        "own tuned production configuration",
+    "production":
+        "currently shipping in the Sablier SDK",
+    "research":
+        "top research candidate for the next production version",
+    "production-legacy":
+        "previous production model, kept for progression comparison",
     "published-defaults":
         "external baseline at untuned published defaults",
-    "invalid-pending-regen":
-        "rows void until regenerated (see Invalid section)",
     "replay-resampling":
-        "resamples/replays real training data (industry practice: historical "
-        "simulation family); scenarios are drawn from history rather than "
-        "generated, so memorization-guard flags are expected by construction",
+        "resamples/replays real training data (historical simulation family); "
+        "memorization-guard flags are expected by construction",
 }
 
 
@@ -182,44 +179,41 @@ class Competitor:
 
 
 # ---- the v1-panel competitor field -----------------------------------------
-# FLOW production entries (P1 = first production config, P2 = tuned production
-# config), each under an opaque codename. The FLOW flavors (FLOW-A…J) are
-# separate architecture-sweep configurations; they slot into every board as
-# additional rows with no code change.
-_FLOW_PRODUCTION = [
-    Competitor("FLOW-P1", "flow", "sablier_flow/seed_*",
-               provenance="production-reference", note="production configuration"),
-    Competitor("FLOW-P2", "flow", "sablier_flow_v2/seed_*",
-               provenance="production-reference", note="tuned production configuration"),
-]
-
-# Flavor codenames — arch mapping is PRIVATE. seed_glob=None => pending (GPU-gated).
-FLOW_FLAVOR_CODENAMES = [f"FLOW-{c}" for c in "ABCDEFGHIJ"]
-_FLOW_FLAVORS = [
-    Competitor(cn, "flow", f"flavors/{cn.lower()}/seed_*",
-               provenance="recipe-controlled", note="pending GPU generation")
-    for cn in FLOW_FLAVOR_CODENAMES
+# Sablier's three published Sablier-Flow rows. Sablier-Flow is what the SDK
+# currently produces; Sablier-Flow-Next is our top research candidate for the
+# next production release; Sablier-Flow-Old is the previous production model,
+# kept so readers can see the progression.
+_SABLIER_FLOW = [
+    Competitor("Sablier-Flow", "flow", "sablier-flow/seed_*",
+               provenance="production",
+               note="currently shipping in the Sablier SDK"),
+    Competitor("Sablier-Flow-Next", "flow", "sablier-flow-next/seed_*",
+               provenance="research",
+               note="top research candidate for the next production version"),
+    Competitor("Sablier-Flow-Old", "flow", "sablier-flow-old/seed_*",
+               provenance="production-legacy",
+               note="previous production model, kept for progression comparison"),
 ]
 
 _BASELINES = [
     Competitor("KoVAE",        "neural", "kovae/seed_*"),
     Competitor("Diffusion-TS", "neural", "diffusion_ts/seed_*",
-               note="REGENERATED in native return space 2026-07-13 (void lifted); "
-                    "authors' stocks config at published defaults"),
+               note="authors' stocks config at published defaults"),
     Competitor("TimeVAE",      "neural", "timevae/seed_*"),
     Competitor("TimeGAN",      "neural", "timegan/seed_*"),
     Competitor("TimeGAN-600",  "neural", "timegan_600/seed_*"),
     Competitor("QuantGAN",     "neural", "quantgan/seed_*"),
-    # GARCH-t / DCC-t: archived tensors generated by scripts/flow/classical_baselines_run.py
-    # (generators verbatim from examples/multi_universe_leaderboard.py, published defaults).
+    Competitor("ImagenTime",   "neural", "imagentime/seed_*",
+               note="NeurIPS'24 diffusion"),
+    Competitor("FM-TS",        "neural", "fm_ts/seed_*",
+               note="flow-based TS baseline"),
     Competitor("GARCH-t",      "classical", "garch_t/seed_*",
                note="per-asset GJR-GARCH(1,1,1)-t, assets independent"),
     Competitor("DCC-t",        "classical", "dcc_t/seed_*",
                note="GJR-GARCH(1,1,1)-t marginals + DCC Student-t copula"),
     # Replay/resampling family: what a practitioner uses INSTEAD of a deep
-    # generator (historical simulation & friends). Ranked on every board they
-    # apply to, provenance-disclosed; memorization-guard flags are expected by
-    # construction, not a defect.
+    # generator. Ranked on every board they apply to, provenance-disclosed;
+    # memorization-guard flags are expected by construction.
     Competitor("Historical-Sim",  "classical", "historical_sim/seed_*",
                provenance="replay-resampling",
                note="overlapping historical windows replayed verbatim"),
@@ -232,45 +226,10 @@ _BASELINES = [
     Competitor("Gaussian-iid",    "classical", "gaussian_iid/seed_*",
                note="iid multivariate Gaussian fit to train moments"),
     Competitor("t-Copula",        "classical", "t_copula/seed_*",
-               note="Student-t copula + EMPIRICAL marginals (semi-parametric: simulated "
-                    "values interpolate train order statistics, so a SUSPICIOUS "
-                    "memorization flag is expected by construction), iid in time"),
+               note="Student-t copula + empirical marginals, iid in time"),
 ]
 
-# Research-surfaced baselines to ADD. Each is a repo to
-# integrate + a generation run, so PENDING (seed_glob points at where its tensors
-# will land). Tier 1 competes on our turf / reviewers expect it; Tier 2 = legibility.
-_PENDING_BASELINES = [
-    # Tier 1
-    Competitor("ImagenTime",  "neural", "imagentime/seed_*",         note="NeurIPS'24 diffusion — modern unconditional SOTA"),
-    Competitor("PCF-GAN",     "neural", "pending/pcf_gan/seed_*",    note="NeurIPS'23 signature — standard sig baseline; distinct discriminator"),
-    Competitor("Tail-GAN",    "neural", "pending/tail_gan/seed_*",   note="Mgmt Sci'25 — optimizes multivariate VaR/ES tail fidelity; official repo chaozhang-ox/Tail-GAN (2 bugs to patch)"),
-    # Tier 2 (optional / legibility)
-    Competitor("FM-TS",         "neural", "fm_ts/seed_*",                 note="rectified-flow representative"),
-    Competitor("Fourier-Flows", "neural", "pending/fourier_flows/seed_*", note="the normalizing-flow reference baseline"),
-    Competitor("TimeVQVAE",     "neural", "pending/timevqvae/seed_*",     note="discrete-latent + transformer prior; different family"),
-    # NOTE: SigCWGAN — add only if our sig-WGAN is the UNCONDITIONAL variant (2111.01207).
-]
-
-# SUBMISSION-ONLY (decision 2026-07-13): repos verified working + specced, but their
-# code carries NO LICENSE, so we do not train/publish results on them. They are not
-# omitted from the field on merit — the authors can enter their own tensors via the
-# public submission path if/when they choose. Do NOT add to COMPETITORS.
-#   TSFlow  (ICLR'25 flow-matching, marcelkollovieh/TSFlow — no license)
-#   SBBTS   (arXiv 2604.07159 Schrödinger–Bass bridge, alexouadi/SBBTS — no license)
-SUBMISSION_ONLY_NO_LICENSE = ["TSFlow", "SBBTS"]
-
-# NOT benchmarked — acknowledged in the paper as non-comparable:
-#   forecasters (Chronos, Moirai, TimesFM, Lag-Llama, TimeGPT) — conditional path
-#   extension, not unconditional joint generation; closed finance vendors (Skanalytix,
-#   Synthera); microstructure sims (Simudyne, ABIDES). Kept out of COMPETITORS by design.
-ACKNOWLEDGE_NOT_BENCHMARKED = [
-    "Chronos", "Moirai", "TimesFM", "Lag-Llama", "TimeGPT",  # forecasters, not generators
-    "Skanalytix", "Synthera AI",                              # closed finance vendors
-    "Simudyne Horizon", "ABIDES",                             # microstructure sims
-]
-
-COMPETITORS = _FLOW_PRODUCTION + _FLOW_FLAVORS + _BASELINES + _PENDING_BASELINES
+COMPETITORS = _SABLIER_FLOW + _BASELINES
 
 
 def available_competitors():

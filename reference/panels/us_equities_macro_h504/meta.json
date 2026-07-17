@@ -1,7 +1,6 @@
 {
  "panel": "us_equities_macro_2010_2023",
  "source": "sablier_flow.demo_data (public); no competitor archive involved",
- "construction": "examples/build_horizon_reference.py (deterministic, no RNG)",
  "transforms": "log-diff IWM/QQQ/SPY/TLT/DXY, first-diff VIX/TNX (identical to the H=60 canonical real, examples/submit.py)",
  "oos_split_date": "2020-01-01",
  "train_end": "2019-12-31",
@@ -26,6 +25,5 @@
   504,
   7
  ],
- "sha256": "f210f64c7797cd5d7eb466eff2c8ed498d5bd33792b2da2670860106bb02306c",
- "protocol": "HORIZON_PROTOCOL.md"
+ "sha256": "f210f64c7797cd5d7eb466eff2c8ed498d5bd33792b2da2670860106bb02306c"
 }

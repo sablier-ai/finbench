@@ -1,0 +1,5 @@
+numpy>=1.24
+pandas>=2.0
+scipy>=1.11
+sablier-flow>=1.2.0
+finval>=0.6.1

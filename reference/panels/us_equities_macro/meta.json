@@ -1,0 +1,32 @@
+{
+ "panel": "us_equities_macro_2010_2023",
+ "source": "sablier_flow.demo_data (public) \u2014 no competitor archive involved",
+ "transforms": "log-diff IWM/QQQ/SPY/TLT/DXY, first-diff VIX/TNX",
+ "feature_order": [
+  "IWM",
+  "QQQ",
+  "SPY",
+  "TLT",
+  "VIX",
+  "TNX",
+  "DXY"
+ ],
+ "train_span": [
+  "2010-01-04",
+  "2019-12-31"
+ ],
+ "oos_span": [
+  "2020-01-02",
+  "2023-12-28"
+ ],
+ "horizon": 60,
+ "n_paths": 200,
+ "sliding_windows": true,
+ "shape": [
+  200,
+  60,
+  7
+ ],
+ "dtype": "float32",
+ "sha256": "34f9063f5b6c61a9aae501b84e001464b31ee1abbfde5ea232e429d0e5ed5fdc"
+}

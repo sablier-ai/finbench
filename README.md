@@ -33,7 +33,13 @@ calibration, strategy-rank transfer — not on the distributional-matching proxi
 Seven tasks on the `us_equities_macro` panel (`D=7`, `N=200`, `H=60`, OOS). A
 model is generated **once** per panel and scored by every task; per-task boards
 report the task's native metric with a real-vs-real noise floor, and a rank-based
-aggregate combines them. FLOW variants appear under opaque codenames.
+aggregate combines them.
+
+Sablier publishes three rows on the board: **Sablier-Flow** (currently
+shipping in the [Sablier SDK](https://pypi.org/project/sablier-flow/)),
+**Sablier-Flow-Next** (top research candidate for the next production
+release), and **Sablier-Flow-Old** (previous production model, kept for
+progression comparison). External baselines run their published defaults.
 
 **Fidelity** — does the synth reproduce the real panel's distribution?
 

@@ -129,7 +129,7 @@ We score outputs, not internals. Same protocol everyone runs against.
 ## 9. Versioning
 
 - Scorer upgrades that don't change metric semantics are picked up by a pure
-  recompute on the stored paths (`python examples/rescore.py`) — no model
-  re-runs — and produce a new versioned leaderboard. Prior versions stay frozen.
+  recompute on the stored paths (`python -m benchmark.run`) — no model re-runs
+  — and produce a new versioned leaderboard. Prior versions stay frozen.
 - Changes to the panel, split, or task set require a new FinBench version
   (v2, v3, …). v1 numbers stay valid forever.
