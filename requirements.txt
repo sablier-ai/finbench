@@ -2,4 +2,11 @@ numpy>=1.24
 pandas>=2.0
 scipy>=1.11
 sablier-flow>=1.2.0
-finval>=0.6.1
+
+# Upper bound is deliberate. Leaderboard scores are only comparable within one
+# finval minor version, and benchmark/tasks.py reads fields (MetricResult.assessable)
+# that finval added in 0.6.0. A 0.7 release may re-baseline metrics or thresholds,
+# which would silently move every published number — so raising this bound is a
+# decision to RE-SCORE the board, not a routine dependency bump.
+# benchmark/__init__.py enforces the same range at import.
+finval>=0.6.1,<0.7.0

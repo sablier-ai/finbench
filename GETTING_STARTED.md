@@ -10,9 +10,16 @@ are on the leaderboard." For the panel and protocol, see
 ```bash
 git clone https://github.com/sablier-ai/finbench
 cd finbench
-pip install sablier-flow                                 # for the panel
-pip install finval                                       # for scoring
+python -m venv .venv && source .venv/bin/activate        # recommended — see note
+pip install -r requirements.txt                          # panel + scoring, pinned
 ```
+
+> **Install from `requirements.txt`, not a bare `pip install finval`.** Leaderboard
+> scores are only comparable within one finval minor version, and the scorers read
+> fields that other releases may not have. A mismatched finval would not crash — it
+> would silently produce an empty or incomparable board. `benchmark/__init__.py`
+> checks the version at import and fails loudly if it's wrong, but a virtualenv is
+> the reliable way to avoid picking up an old finval already on your system.
 
 ## 1. Load the panel
 
